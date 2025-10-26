@@ -1,9 +1,11 @@
+import { Injectable } from '@nestjs/common';
 import { DiagramImage } from '../../../domain/export/diagram-image.aggregate';
 import { IDiagramImageRepository } from '../../../domain/export/diagram-image.repository.interface';
 import { IImageConverter } from '../../../domain/export/image-converter.interface';
 import { ImageFormat } from '../../../domain/export/image-format.enum';
 import { ExportError } from '../../../domain/export/export-error.value-object';
 import { IMermaidRenderer } from '../../../domain/rendering/mermaid-renderer.interface';
+import { DomainEventPublisherService } from '../../../infrastructure/events/domain-event-publisher.service';
 import { ExportPngCommand } from './export-png.command';
 import { ExportImageResult } from './export-image.result';
 
@@ -17,11 +19,13 @@ import { ExportImageResult } from './export-image.result';
  * 4. 변환 결과를 Aggregate에 반영
  * 5. Repository에 저장
  */
+@Injectable()
 export class ExportPngUseCase {
   constructor(
     private readonly diagramImageRepository: IDiagramImageRepository,
     private readonly mermaidRenderer: IMermaidRenderer,
     private readonly imageConverter: IImageConverter,
+    private readonly eventPublisher: DomainEventPublisherService,
   ) {}
 
   async execute(command: ExportPngCommand): Promise<ExportImageResult> {
@@ -30,13 +34,13 @@ export class ExportPngUseCase {
       const svg = await this.mermaidRenderer.render(command.mermaidCode);
 
       // 2. DiagramImage Aggregate 생성
-      const diagramImage = DiagramImage.create(ImageFormat.PNG, svg, {
+      const diagramImage = DiagramImage.create(svg, ImageFormat.PNG, {
         width: command.width,
         height: command.height,
       });
 
       // 3. PNG로 변환
-      const pngBuffer = await this.imageConverter.convertToPng(svg, {
+      const pngBuffer = await this.imageConverter.convert(svg, ImageFormat.PNG, {
         width: command.width,
         height: command.height,
         backgroundColor: command.backgroundColor,
@@ -50,7 +54,7 @@ export class ExportPngUseCase {
 
       // 6. Domain Events 발행
       const events = diagramImage.pullDomainEvents();
-      // TODO: Event Bus로 이벤트 발행
+      this.eventPublisher.publishAll(events);
 
       // 7. Result DTO 반환
       return new ExportImageResult(

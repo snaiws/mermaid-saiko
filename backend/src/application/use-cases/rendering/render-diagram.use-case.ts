@@ -1,7 +1,9 @@
+import { Injectable } from '@nestjs/common';
 import { Diagram } from '../../../domain/rendering/diagram.aggregate';
 import { IDiagramRepository } from '../../../domain/rendering/diagram.repository.interface';
 import { IMermaidRenderer } from '../../../domain/rendering/mermaid-renderer.interface';
 import { RenderingError } from '../../../domain/rendering/rendering-error.value-object';
+import { DomainEventPublisherService } from '../../../infrastructure/events/domain-event-publisher.service';
 import { RenderDiagramCommand } from './render-diagram.command';
 import { RenderDiagramResult } from './render-diagram.result';
 
@@ -15,10 +17,12 @@ import { RenderDiagramResult } from './render-diagram.result';
  * 4. Repository에 저장
  * 5. Domain Events 처리 (Event Bus로 발행)
  */
+@Injectable()
 export class RenderDiagramUseCase {
   constructor(
     private readonly diagramRepository: IDiagramRepository,
     private readonly mermaidRenderer: IMermaidRenderer,
+    private readonly eventPublisher: DomainEventPublisherService,
   ) {}
 
   async execute(command: RenderDiagramCommand): Promise<RenderDiagramResult> {
@@ -35,9 +39,9 @@ export class RenderDiagramUseCase {
       // 4. Repository에 저장
       await this.diagramRepository.save(diagram);
 
-      // 5. Domain Events 발행 (여기서는 추후 Event Bus 연동)
+      // 5. Domain Events 발행
       const events = diagram.pullDomainEvents();
-      // TODO: Event Bus로 이벤트 발행
+      this.eventPublisher.publishAll(events);
 
       // 6. Result DTO 반환
       return new RenderDiagramResult(
@@ -58,7 +62,7 @@ export class RenderDiagramUseCase {
 
       // Domain Events 발행
       const events = diagram.pullDomainEvents();
-      // TODO: Event Bus로 이벤트 발행
+      this.eventPublisher.publishAll(events);
 
       // 에러 재발생
       throw error;
