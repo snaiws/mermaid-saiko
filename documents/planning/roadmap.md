@@ -79,11 +79,11 @@ Mermaid Saiko 프로젝트
     │   ├─ [x] 프론트엔드 프로젝트 초기화
     │   └─ [x] Docker 설정
     │
-    ├─ [ ] Domain Layer 구현
-    │   ├─ [ ] Aggregate 구현
-    │   ├─ [ ] Value Object 구현
-    │   ├─ [ ] Domain Event 구현
-    │   └─ [ ] 비즈니스 로직 구현
+    ├─ [x] Domain Layer 구현
+    │   ├─ [x] Aggregate 구현
+    │   ├─ [x] Value Object 구현
+    │   ├─ [x] Domain Event 구현
+    │   └─ [x] 비즈니스 로직 구현
     │
     ├─ [ ] Application Layer 구현
     │   ├─ [ ] Use Case 구현
@@ -125,11 +125,11 @@ Mermaid Saiko 프로젝트
 
 ## 현재 진행 중
 
-**단계**: 6단계 진행 중 (프로젝트 구조 생성 완료)
+**단계**: 6단계 진행 중 (Domain Layer 완료)
 
-**현재 작업**: Domain Layer 구현 준비
+**현재 작업**: Application Layer 구현 준비
 
-**다음 작업**: Aggregate, Value Object, Domain Event 구현
+**다음 작업**: Use Case, Command/Query, Event Handler 구현
 
 ---
 
@@ -142,6 +142,7 @@ Mermaid Saiko 프로젝트
 - ✅ 2025-10-26: 4단계 API 설계 완료 (6개 REST 엔드포인트, 클라이언트 구현 가이드)
 - ✅ 2025-10-26: 5단계 아키텍처 설계 완료 (모놀리식, DDD 레이어드, 기술 스택 선정)
 - ✅ 2025-10-26: 6단계 프로젝트 구조 생성 완료 (백엔드/프론트엔드 초기화, Docker, README)
+- ✅ 2025-10-26: Domain Layer 구현 완료 (3개 Aggregate, 9개 Value Object, 13개 Domain Event)
 
 ---
 
