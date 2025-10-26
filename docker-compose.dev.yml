@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (개발용)
+  database:
+    image: postgres:16-alpine
+    container_name: mermaid-saiko-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mermaid_saiko_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 개발 시 백엔드와 프론트엔드는 직접 실행 (npm run dev)
+  # docker-compose.dev.yml은 DB만 띄우고, 나머지는 로컬에서 실행
+
+volumes:
+  postgres_dev_data:
