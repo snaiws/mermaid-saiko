@@ -97,11 +97,13 @@ Mermaid Saiko 프로젝트
     │   ├─ [x] External Service 구현 (Puppeteer 기반)
     │   └─ [x] Event Bus 구현 (NestJS EventEmitter)
     │
-    ├─ [ ] API Layer 구현
-    │   ├─ [ ] REST API Controller 구현
-    │   ├─ [ ] DTO 정의
-    │   ├─ [ ] Validation 구현
-    │   └─ [ ] Error Handling 구현
+    ├─ [x] API Layer 구현
+    │   ├─ [x] Request/Response DTO 정의
+    │   ├─ [x] Rendering Controller (POST /render, GET /diagram/:id)
+    │   ├─ [x] Export Controller (POST /png, POST /svg)
+    │   ├─ [x] Validation (class-validator)
+    │   ├─ [x] Error Handling (Exception Filters)
+    │   └─ [x] API Modules 통합
     │
     ├─ [ ] Frontend 구현
     │   ├─ [ ] 페이지 컴포넌트 구현
@@ -126,11 +128,11 @@ Mermaid Saiko 프로젝트
 
 ## 현재 진행 중
 
-**단계**: 6단계 진행 중 (Infrastructure Layer 완료)
+**단계**: 6단계 진행 중 (API Layer 완료)
 
-**현재 작업**: API Layer 구현 준비
+**현재 작업**: Frontend 구현 준비
 
-**다음 작업**: REST API Controllers, DTO, Validation, Error Handling 구현
+**다음 작업**: 페이지 컴포넌트, 상태 관리, API 연동 구현
 
 ---
 
@@ -146,6 +148,7 @@ Mermaid Saiko 프로젝트
 - ✅ 2025-10-26: Domain Layer 구현 완료 (3개 Aggregate, 9개 Value Object, 13개 Domain Event)
 - ✅ 2025-10-26: Application Layer 구현 완료 (3개 Use Case, Command/Query DTO, Repository/Service 인터페이스)
 - ✅ 2025-10-27: Infrastructure Layer 구현 완료 (TypeORM Entities, Repository, External Services, Event Bus)
+- ✅ 2025-10-27: API Layer 구현 완료 (Controllers, DTOs, Validation, Error Handling)
 
 ---
 
