@@ -11,6 +11,6 @@ export const typeOrmConfig: DataSourceOptions = {
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'mermaid_saiko',
   entities: [DiagramEntity, DiagramImageEntity, EditorSessionEntity],
-  synchronize: process.env.NODE_ENV !== 'production', // 개발 중에만 자동 동기화
+  synchronize: true, // 개발/테스트 환경에서 자동 스키마 동기화
   logging: process.env.NODE_ENV === 'development',
 };

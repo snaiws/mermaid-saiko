@@ -4,7 +4,9 @@ import axios from 'axios';
  * Axios 인스턴스 설정
  */
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  // Production: nginx 프록시를 통해 /api로 요청
+  // Development: 직접 백엔드 서버로 요청
+  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : ''),
   timeout: 30000, // 30초 (Puppeteer 렌더링 시간 고려)
   headers: {
     'Content-Type': 'application/json',

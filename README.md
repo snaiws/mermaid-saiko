@@ -204,6 +204,45 @@ http://localhost:5173
 docker exec -it <postgres-container-name> psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
 ```
 
+#### Docker 실행 시 "relation does not exist" 에러
+
+백엔드가 실행되지만 API 호출 시 테이블이 없다는 에러가 발생하는 경우:
+
+**원인**: TypeORM의 `synchronize` 옵션이 비활성화되어 있음
+
+**해결책**:
+1. `backend/src/infrastructure/persistence/typeorm/typeorm.config.ts`에서 `synchronize: true` 확인
+2. Docker 컨테이너 재빌드:
+   ```bash
+   docker compose down
+   docker compose up -d --build
+   ```
+
+#### CORS 에러 발생
+
+브라우저 콘솔에서 CORS 에러가 발생하는 경우:
+
+**원인**: 백엔드가 프론트엔드 origin을 허용하지 않음
+
+**해결책**: `backend/src/main.ts`에서 CORS 설정 확인:
+```typescript
+app.enableCors({
+  origin: [
+    'http://localhost:5173', // Vite dev server
+    'http://localhost:8080', // Docker nginx
+  ],
+  credentials: true,
+});
+```
+
+#### 프론트엔드에서 백엔드 연결 실패 (ERR_CONNECTION_REFUSED)
+
+**원인**: 프론트엔드가 잘못된 URL로 API를 호출
+
+**해결책**:
+- Docker 환경: nginx 프록시를 통해 `/api/*` 경로로 요청 (설정 완료됨)
+- 개발 환경: `http://localhost:3000`으로 직접 요청
+
 #### TypeScript 컴파일 에러
 
 백엔드 실행 시 TypeScript 에러가 발생하면 `tsconfig.json` 설정을 확인하세요:
@@ -234,17 +273,72 @@ sudo apt-get install -y chromium-browser
 
 전체 스택을 Docker Compose로 실행:
 
-```bash
-# 환경 변수 설정
-cp .env.example .env
+#### 1. 환경 변수 설정
 
-# 빌드 및 실행
-docker-compose up -d --build
+루트 디렉토리에 `.env` 파일을 생성하고 다음 내용을 설정:
+
+```bash
+# PostgreSQL 데이터베이스 설정
+DB_HOST=host.docker.internal  # 또는 실제 DB 호스트
+DB_PORT=5432                   # PostgreSQL 포트
+DB_USER=postgres               # DB 사용자명
+DB_PASSWORD=yourpassword       # DB 비밀번호
+DB_NAME=mermaid_saiko          # DB 이름
+
+# 포트 설정 (선택사항)
+BACKEND_PORT=3000
+FRONTEND_PORT=8080
 ```
 
-서비스 접근:
-- **Frontend**: http://localhost:8080
+**중요**: Docker 컨테이너에서 로컬 PostgreSQL에 접근하려면 `DB_HOST=host.docker.internal`을 사용하세요.
+
+#### 2. 데이터베이스 생성
+
+Docker 실행 전에 PostgreSQL 데이터베이스를 먼저 생성해야 합니다:
+
+```bash
+# 로컬 PostgreSQL에 접속하여 DB 생성
+psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+
+# 또는 Docker PostgreSQL 컨테이너에서
+docker exec -it <postgres-container-name> psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+```
+
+#### 3. Docker Compose 실행
+
+```bash
+# 빌드 및 실행
+docker compose up -d --build
+
+# 로그 확인
+docker compose logs -f
+
+# 컨테이너 상태 확인
+docker compose ps
+```
+
+#### 4. 서비스 접근
+
+- **Frontend 웹 UI**: http://localhost:8080
 - **Backend API**: http://localhost:3000/api/v1
+
+**주의**:
+- 프론트엔드는 **nginx를 통한 프록시**로 백엔드 API에 접근합니다 (`/api/*` 경로)
+- 브라우저에서 API를 직접 호출할 필요 없이 프론트엔드 UI만 사용하면 됩니다
+
+#### 5. 중지 및 재시작
+
+```bash
+# 중지
+docker compose down
+
+# 재시작
+docker compose restart
+
+# 특정 서비스만 재시작
+docker compose restart backend
+docker compose restart frontend
+```
 
 ---
 

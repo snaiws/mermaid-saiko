@@ -2,28 +2,34 @@
  * Diagram 관련 타입 정의
  */
 
-export enum DiagramType {
-  FLOWCHART = 'flowchart',
-  SEQUENCE = 'sequence',
-  CLASS = 'class',
-  STATE = 'state',
-  ER = 'er',
-  GANTT = 'gantt',
-  PIE = 'pie',
-  JOURNEY = 'journey',
-  UNKNOWN = 'unknown',
-}
+export const DiagramType = {
+  FLOWCHART: 'flowchart',
+  SEQUENCE: 'sequence',
+  CLASS: 'class',
+  STATE: 'state',
+  ER: 'er',
+  GANTT: 'gantt',
+  PIE: 'pie',
+  JOURNEY: 'journey',
+  UNKNOWN: 'unknown',
+} as const;
 
-export enum RenderStatus {
-  PENDING = 'pending',
-  SUCCESS = 'success',
-  FAILED = 'failed',
-}
+export type DiagramType = (typeof DiagramType)[keyof typeof DiagramType];
 
-export enum ImageFormat {
-  PNG = 'png',
-  SVG = 'svg',
-}
+export const RenderStatus = {
+  PENDING: 'pending',
+  SUCCESS: 'success',
+  FAILED: 'failed',
+} as const;
+
+export type RenderStatus = (typeof RenderStatus)[keyof typeof RenderStatus];
+
+export const ImageFormat = {
+  PNG: 'png',
+  SVG: 'svg',
+} as const;
+
+export type ImageFormat = (typeof ImageFormat)[keyof typeof ImageFormat];
 
 export interface RenderDiagramRequest {
   mermaidCode: string;
