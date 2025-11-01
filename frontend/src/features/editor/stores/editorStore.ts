@@ -24,7 +24,7 @@ const MAX_HISTORY = 50;
 
 export const useEditorStore = create<EditorStore>((set, get) => ({
   // Initial State
-  code: '```mermaid\ngraph LR\n    A[Start] --> B[Process]\n    B --> C[End]\n```',
+  code: 'graph LR\n    A[Start] --> B[Process]\n    B --> C[End]',
   cursorPosition: { line: 1, column: 1 },
   undoStack: [],
   redoStack: [],
@@ -88,7 +88,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   reset: () => {
     set({
-      code: '```mermaid\ngraph LR\n    A[Start] --> B[Process]\n    B --> C[End]\n```',
+      code: 'graph LR\n    A[Start] --> B[Process]\n    B --> C[End]',
       cursorPosition: { line: 1, column: 1 },
       undoStack: [],
       redoStack: [],

@@ -8,13 +8,9 @@ export const useRenderDiagram = () => {
   const { code } = useEditorStore();
 
   const renderDiagram = useCallback(async () => {
-    // Mermaid code 블록 제거 (```mermaid ... ``` 제거)
-    const cleanedCode = code
-      .replace(/^```mermaid\n?/i, '')
-      .replace(/\n?```$/, '')
-      .trim();
+    const trimmedCode = code.trim();
 
-    if (!cleanedCode) {
+    if (!trimmedCode) {
       setError('Code is empty');
       return;
     }
@@ -23,7 +19,7 @@ export const useRenderDiagram = () => {
 
     try {
       const result = await renderingApi.renderDiagram({
-        mermaidCode: cleanedCode,
+        mermaidCode: trimmedCode,
       });
 
       setSuccess(result.diagramId, result.renderedSvg, result.diagramType);
