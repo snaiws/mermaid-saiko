@@ -27,22 +27,17 @@ export class ImagePuppeteerConverterService
     }
   }
 
-  async convert(
+  async convertToPng(
     svg: string,
-    format: ImageFormat,
     options?: {
       width?: number;
       height?: number;
+      scale?: number;
       backgroundColor?: string;
     },
   ): Promise<Buffer> {
     if (!this.browser) {
       throw new Error('Browser is not initialized');
-    }
-
-    if (format === ImageFormat.SVG) {
-      // SVG는 변환 불필요, 그대로 반환
-      return Buffer.from(svg);
     }
 
     const page = await this.browser.newPage();
@@ -101,12 +96,17 @@ export class ImagePuppeteerConverterService
 
     // 스크린샷 촬영
     const screenshot = await page.screenshot({
-      type: format === ImageFormat.PNG ? 'png' : 'jpeg',
-      omitBackground: format === ImageFormat.PNG, // PNG는 투명 배경 지원
+      type: 'png',
+      omitBackground: true, // PNG는 투명 배경 지원
     });
 
     await page.close();
 
     return screenshot as Buffer;
+  }
+
+  async cleanSvg(svg: string): Promise<string> {
+    // SVG를 정리하여 반환 (현재는 그대로 반환)
+    return svg;
   }
 }

@@ -29,8 +29,6 @@ import { DomainEventPublisherService } from '../../infrastructure/events/domain-
         DomainEventPublisherService,
       ],
     },
-    // Repository는 Controller에서 직접 사용
-    TypeOrmDiagramRepository,
   ],
 })
 export class RenderingModule {}

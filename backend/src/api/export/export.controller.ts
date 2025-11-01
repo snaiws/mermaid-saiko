@@ -35,8 +35,8 @@ export class ExportController {
     try {
       const command = new ExportPngCommand(
         request.mermaidCode,
-        request.options?.width ?? null,
-        request.options?.height ?? null,
+        request.options?.width ?? undefined,
+        request.options?.height ?? undefined,
         request.options?.backgroundColor ?? 'white',
       );
 

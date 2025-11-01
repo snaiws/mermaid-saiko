@@ -34,11 +34,9 @@ export class ExportSvgUseCase {
       // 2. DiagramImage Aggregate 생성
       const diagramImage = DiagramImage.create(svg, ImageFormat.SVG);
 
-      // 3. SVG는 변환 없이 원본 사용
-      const svgBuffer = await this.imageConverter.convert(
-        svg,
-        ImageFormat.SVG,
-      );
+      // 3. SVG는 변환 없이 정리만 수행
+      const cleanedSvg = await this.imageConverter.cleanSvg(svg);
+      const svgBuffer = Buffer.from(cleanedSvg);
 
       // 4. Export 성공 처리
       diagramImage.markAsExported(svgBuffer);

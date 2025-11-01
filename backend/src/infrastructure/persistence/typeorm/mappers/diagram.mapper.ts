@@ -15,7 +15,7 @@ export class DiagramMapper {
     entity.renderedSvg = diagram.renderedSvg;
     entity.renderStatus = diagram.renderStatus;
     entity.errorMessage = diagram.error?.message ?? null;
-    entity.errorCode = diagram.error?.code ?? null;
+    entity.errorCode = null; // RenderingError에 code 필드 없음
     entity.createdAt = diagram.createdAt;
 
     return entity;
@@ -28,7 +28,7 @@ export class DiagramMapper {
     let error: RenderingError | null = null;
 
     if (entity.errorMessage) {
-      error = RenderingError.create(entity.errorMessage, null, null);
+      error = RenderingError.create(entity.errorMessage, undefined, undefined);
     }
 
     return Diagram.reconstitute(

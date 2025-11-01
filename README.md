@@ -113,38 +113,119 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-#### 3. 데이터베이스 실행 (Docker)
+#### 3. PostgreSQL 데이터베이스 설정
+
+**Option 1: 기존 PostgreSQL 사용 (권장)**
+
+기존에 실행 중인 PostgreSQL이 있다면:
+
+```bash
+# PostgreSQL에 접속하여 데이터베이스 생성
+psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+
+# 또는 Docker 컨테이너로 실행 중인 경우
+docker exec -it <postgres-container-name> psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+```
+
+**Option 2: Docker Compose로 새로 설치**
 
 ```bash
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
-이 명령어는 PostgreSQL만 Docker 컨테이너로 실행합니다.
+이 명령어는 PostgreSQL만 Docker 컨테이너로 실행하고, 데이터베이스를 자동 생성합니다.
 
-#### 4. 백엔드 실행
+#### 4. 백엔드 의존성 설치 및 실행
 
 ```bash
 cd backend
 npm install
+```
+
+**중요**: 처음 실행 시 다음 의존성들이 자동으로 설치됩니다:
+- `class-validator`, `class-transformer` (Validation)
+- `typeorm`, `pg` (Database)
+- `@nestjs/typeorm` (NestJS TypeORM 통합)
+- `mermaid`, `puppeteer` (다이어그램 렌더링 & 이미지 변환)
+
+```bash
 npm run start:dev
 ```
 
 백엔드가 `http://localhost:3000`에서 실행됩니다.
 
-#### 5. 프론트엔드 실행
+**실행 확인**:
+```
+✅ Server is running on http://localhost:3000
+✅ Mapped {/api/v1/rendering/render, POST} route
+✅ Mapped {/api/v1/export/png, POST} route
+```
+
+#### 5. 프론트엔드 의존성 설치 및 실행
 
 ```bash
 cd frontend
 npm install
+```
+
+**중요**: 처음 실행 시 다음 의존성들이 자동으로 설치됩니다:
+- `react-router-dom` (라우팅)
+- `zustand` (상태 관리)
+- `axios` (API 통신)
+- `@monaco-editor/react` (코드 에디터)
+- `tailwindcss`, `postcss`, `autoprefixer` (스타일링)
+
+```bash
 npm run dev
 ```
 
 프론트엔드가 `http://localhost:5173`에서 실행됩니다.
 
+**실행 확인**:
+```
+VITE v7.1.12  ready in 163 ms
+➜  Local:   http://localhost:5173/
+```
+
 #### 6. 브라우저에서 접속
 
 ```
 http://localhost:5173
+```
+
+---
+
+### 문제 해결 (Troubleshooting)
+
+#### 백엔드 실행 시 "database does not exist" 에러
+
+```bash
+# 해결: 데이터베이스를 수동으로 생성
+docker exec -it <postgres-container-name> psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+```
+
+#### TypeScript 컴파일 에러
+
+백엔드 실행 시 TypeScript 에러가 발생하면 `tsconfig.json` 설정을 확인하세요:
+- `module: "commonjs"`
+- `moduleResolution: "node"`
+
+#### 의존성 설치 에러
+
+```bash
+# package-lock.json 삭제 후 재설치
+cd backend  # 또는 frontend
+rm package-lock.json
+rm -rf node_modules
+npm install
+```
+
+#### Puppeteer 설치 실패 (Linux)
+
+```bash
+# Chrome 의존성 설치
+sudo apt-get update
+sudo apt-get install -y chromium-browser
 ```
 
 ---

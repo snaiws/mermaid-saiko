@@ -10,7 +10,8 @@ export class GetDiagramResponseDto {
   createdAt: Date;
   error?: {
     message: string;
-    code?: string;
+    line?: number | null;
+    column?: number | null;
   };
 
   constructor(
@@ -20,7 +21,7 @@ export class GetDiagramResponseDto {
     mermaidCode: string,
     status: RenderStatus,
     createdAt: Date,
-    error?: { message: string; code?: string },
+    error?: { message: string; line?: number | null; column?: number | null },
   ) {
     this.diagramId = diagramId;
     this.renderedSvg = renderedSvg;

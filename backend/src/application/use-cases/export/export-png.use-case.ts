@@ -40,7 +40,7 @@ export class ExportPngUseCase {
       });
 
       // 3. PNG로 변환
-      const pngBuffer = await this.imageConverter.convert(svg, ImageFormat.PNG, {
+      const pngBuffer = await this.imageConverter.convertToPng(svg, {
         width: command.width,
         height: command.height,
         backgroundColor: command.backgroundColor,

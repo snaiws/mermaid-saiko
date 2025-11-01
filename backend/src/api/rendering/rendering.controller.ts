@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { RenderDiagramUseCase } from '../../application/use-cases/rendering/render-diagram.use-case';
 import { RenderDiagramCommand } from '../../application/use-cases/rendering/render-diagram.command';
-import { IDiagramRepository } from '../../domain/rendering/diagram.repository.interface';
+import { TypeOrmDiagramRepository } from '../../infrastructure/persistence/typeorm/repositories/typeorm-diagram.repository';
 import { ApiSuccessResponse } from '../common/api-response.dto';
 import {
   RenderDiagramRequestDto,
@@ -23,7 +23,7 @@ import {
 export class RenderingController {
   constructor(
     private readonly renderDiagramUseCase: RenderDiagramUseCase,
-    private readonly diagramRepository: IDiagramRepository,
+    private readonly diagramRepository: TypeOrmDiagramRepository,
   ) {}
 
   /**
@@ -83,7 +83,8 @@ export class RenderingController {
       diagram.error
         ? {
             message: diagram.error.message,
-            code: diagram.error.code,
+            line: diagram.error.line,
+            column: diagram.error.column,
           }
         : undefined,
     );

@@ -24,9 +24,9 @@ export class DiagramImageMapper {
     entity.width = diagramImage.options.width;
     entity.height = diagramImage.options.height;
     entity.scale = diagramImage.options.scale;
-    entity.backgroundColor = diagramImage.options.backgroundColor;
+    entity.backgroundColor = null; // backgroundColor는 ExportOptions에 없음
     entity.errorMessage = diagramImage.error?.message ?? null;
-    entity.errorCode = diagramImage.error?.code ?? null;
+    entity.errorCode = null; // ExportError에 code 필드 없음
     entity.createdAt = diagramImage.createdAt;
 
     return entity;
