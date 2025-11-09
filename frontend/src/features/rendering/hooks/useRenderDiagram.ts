@@ -17,8 +17,10 @@ export const useRenderDiagram = () => {
   const { setRendering, setSuccess, setError } = useRenderingStore();
   const { code } = useEditorStore();
 
-  const renderDiagram = useCallback(async () => {
-    const trimmedCode = code.trim();
+  const renderDiagram = useCallback(async (codeOverride?: string) => {
+    // codeOverride가 제공되면 사용, 아니면 store의 code 사용
+    const codeToRender = codeOverride ?? code;
+    const trimmedCode = codeToRender.trim();
 
     if (!trimmedCode) {
       setError('Code is empty');

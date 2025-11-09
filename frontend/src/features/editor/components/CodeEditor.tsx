@@ -25,17 +25,13 @@ export const CodeEditor: React.FC = () => {
         // eslint-disable-next-line no-bitwise
         monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
         () => {
-          // 에디터에서 현재 코드를 가져와서 store 업데이트
+          // 에디터에서 현재 코드를 가져와서 직접 렌더링
           const currentCode = editorInstance.getValue();
-          updateCode(currentCode, { line: 1, column: 1 });
-          // 약간의 지연 후 렌더링 (store 업데이트 반영 대기)
-          setTimeout(() => {
-            renderDiagram();
-          }, 0);
+          renderDiagram(currentCode);
         }
       );
     },
-    [renderDiagram, updateCode]
+    [renderDiagram]
   );
 
   return (
