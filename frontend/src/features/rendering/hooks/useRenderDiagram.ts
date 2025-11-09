@@ -1,7 +1,17 @@
 import { useCallback } from 'react';
-import { renderingApi } from '../../../shared/api/rendering.api';
+import mermaid from 'mermaid';
 import { useRenderingStore } from '../stores/renderingStore';
 import { useEditorStore } from '../../editor/stores/editorStore';
+import { DiagramType } from '../../../types/diagram';
+import type { DiagramType as DiagramTypeType } from '../../../types/diagram';
+
+// Mermaid 초기화
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  securityLevel: 'loose',
+  fontFamily: 'monospace',
+});
 
 export const useRenderDiagram = () => {
   const { setRendering, setSuccess, setError } = useRenderingStore();
@@ -18,14 +28,40 @@ export const useRenderDiagram = () => {
     setRendering();
 
     try {
-      const result = await renderingApi.renderDiagram({
-        mermaidCode: trimmedCode,
-      });
+      // Mermaid.js로 직접 렌더링 (프론트엔드)
+      const { svg } = await mermaid.render(
+        `mermaid-diagram-${Date.now()}`,
+        trimmedCode
+      );
 
-      setSuccess(result.diagramId, result.renderedSvg, result.diagramType);
+      // 다이어그램 타입 추출 (첫 줄에서)
+      const firstLine = trimmedCode.split('\n')[0].trim();
+      let diagramType: DiagramTypeType = DiagramType.UNKNOWN;
+
+      if (firstLine.startsWith('graph') || firstLine.startsWith('flowchart')) {
+        diagramType = DiagramType.FLOWCHART;
+      } else if (firstLine.startsWith('sequenceDiagram')) {
+        diagramType = DiagramType.SEQUENCE;
+      } else if (firstLine.startsWith('classDiagram')) {
+        diagramType = DiagramType.CLASS;
+      } else if (firstLine.startsWith('stateDiagram')) {
+        diagramType = DiagramType.STATE;
+      } else if (firstLine.startsWith('erDiagram')) {
+        diagramType = DiagramType.ER;
+      } else if (firstLine.startsWith('gantt')) {
+        diagramType = DiagramType.GANTT;
+      } else if (firstLine.startsWith('pie')) {
+        diagramType = DiagramType.PIE;
+      } else if (firstLine.startsWith('journey')) {
+        diagramType = DiagramType.JOURNEY;
+      }
+
+      // 프론트엔드 렌더링이므로 diagramId는 로컬 생성
+      const diagramId = `local-${Date.now()}`;
+
+      setSuccess(diagramId, svg, diagramType);
     } catch (error: any) {
       const errorMessage =
-        error.response?.data?.error?.message ||
         error.message ||
         'Failed to render diagram';
       setError(errorMessage);
