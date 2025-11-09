@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Backend API (기존 pgvector_db 사용)
+  # Backend API (인메모리 저장소 사용)
   backend:
     build:
       context: ./backend
@@ -11,14 +11,7 @@ services:
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     environment:
-      NODE_ENV: development
-      DATABASE_HOST: host.docker.internal
-      DATABASE_PORT: ${DB_PORT:-50018}
-      DATABASE_USERNAME: ${DB_USER:-admin}
-      DATABASE_PASSWORD: ${DB_PASSWORD:-1234}
-      DATABASE_NAME: ${DB_NAME:-mermaid_saiko}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      NODE_ENV: production
     volumes:
       - ./backend/logs:/app/logs
 

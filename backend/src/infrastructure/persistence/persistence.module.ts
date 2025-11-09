@@ -1,40 +1,28 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from './typeorm/typeorm.config';
 import {
-  DiagramEntity,
-  DiagramImageEntity,
-  EditorSessionEntity,
-} from './typeorm/entities';
-import {
-  TypeOrmDiagramRepository,
-  TypeOrmDiagramImageRepository,
-  TypeOrmEditorSessionRepository,
-} from './typeorm/repositories';
+  InMemoryDiagramRepository,
+  InMemoryDiagramImageRepository,
+  InMemoryEditorSessionRepository,
+} from './memory/repositories';
 
 /**
  * Persistence Module
  *
- * TypeORM 설정 및 Repository 제공
+ * Phase 1+2: 인메모리 Repository 사용
+ * - 저장 기능 제외 (프로젝트 범위)
+ * - 렌더링/Export는 일회성 작업
+ * - 서버 재시작 시 데이터 손실 (의도된 동작)
  */
 @Module({
-  imports: [
-    TypeOrmModule.forRoot(typeOrmConfig),
-    TypeOrmModule.forFeature([
-      DiagramEntity,
-      DiagramImageEntity,
-      EditorSessionEntity,
-    ]),
-  ],
   providers: [
-    TypeOrmDiagramRepository,
-    TypeOrmDiagramImageRepository,
-    TypeOrmEditorSessionRepository,
+    InMemoryDiagramRepository,
+    InMemoryDiagramImageRepository,
+    InMemoryEditorSessionRepository,
   ],
   exports: [
-    TypeOrmDiagramRepository,
-    TypeOrmDiagramImageRepository,
-    TypeOrmEditorSessionRepository,
+    InMemoryDiagramRepository,
+    InMemoryDiagramImageRepository,
+    InMemoryEditorSessionRepository,
   ],
 })
 export class PersistenceModule {}

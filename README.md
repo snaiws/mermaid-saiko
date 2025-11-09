@@ -20,8 +20,7 @@ AI가 생성한 Mermaid 코드를 즉시 시각화하고, 이미지로 변환할
 ### Backend
 - **Framework**: NestJS 10.x
 - **Language**: TypeScript 5.3
-- **Database**: PostgreSQL 16
-- **ORM**: TypeORM 0.3.x
+- **Storage**: In-Memory (일회성 렌더링, 저장 기능 없음)
 - **Architecture**: DDD (Domain-Driven Design)
 
 ### Frontend
@@ -88,6 +87,8 @@ mermaid-saiko/
 - **npm**: v10+
 - **Docker & Docker Compose**: (선택, 배포용)
 
+**참고**: 이 프로젝트는 데이터베이스를 사용하지 않습니다. 렌더링과 export는 일회성 작업이며, 인메모리 저장소(TTL 1시간)를 사용합니다.
+
 ---
 
 ### 개발 환경 설정
@@ -112,36 +113,7 @@ cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
 
-#### 3. PostgreSQL 데이터베이스 설정
-
-이 프로젝트는 **인프라에 대한 책임이 없으며**, `/workspace/Projects/mlops/mlops/pgvector`에서 관리되는 PostgreSQL 인프라를 사용합니다.
-
-**mlops pgvector 인프라 정보:**
-- 포트: `50018`
-- 유저: `admin`
-- 비밀번호: `1234`
-- 기본 DB: `vectordb`
-
-**데이터베이스 생성:**
-
-mlops pgvector 인프라가 실행 중인지 확인한 후, 다음 명령으로 프로젝트용 데이터베이스를 생성하세요:
-
-```bash
-# mlops pgvector 컨테이너에 접속하여 mermaid_saiko DB 생성
-docker exec -it pgvector_db psql -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
-
-# 또는 psql 클라이언트로 직접 연결
-PGPASSWORD=1234 psql -h localhost -p 50018 -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
-```
-
-**mlops 인프라 시작 (필요한 경우):**
-
-```bash
-cd /workspace/Projects/mlops/mlops/pgvector
-docker-compose up -d
-```
-
-#### 4. 백엔드 의존성 설치 및 실행
+#### 3. 백엔드 의존성 설치 및 실행
 
 ```bash
 cd backend
@@ -150,8 +122,6 @@ npm install
 
 **중요**: 처음 실행 시 다음 의존성들이 자동으로 설치됩니다:
 - `class-validator`, `class-transformer` (Validation)
-- `typeorm`, `pg` (Database)
-- `@nestjs/typeorm` (NestJS TypeORM 통합)
 - `mermaid`, `puppeteer` (다이어그램 렌더링 & 이미지 변환)
 
 ```bash
@@ -167,7 +137,7 @@ npm run start:dev
 ✅ Mapped {/api/v1/export/png, POST} route
 ```
 
-#### 5. 프론트엔드 의존성 설치 및 실행
+#### 4. 프론트엔드 의존성 설치 및 실행
 
 ```bash
 cd frontend
@@ -193,7 +163,7 @@ VITE v7.1.12  ready in 163 ms
 ➜  Local:   http://localhost:5173/
 ```
 
-#### 6. 브라우저에서 접속
+#### 5. 브라우저에서 접속
 
 ```
 http://localhost:5173
@@ -202,41 +172,6 @@ http://localhost:5173
 ---
 
 ### 문제 해결 (Troubleshooting)
-
-#### 백엔드 실행 시 "database does not exist" 에러
-
-```bash
-# 해결: mlops pgvector에 데이터베이스를 수동으로 생성
-docker exec -it pgvector_db psql -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
-
-# 또는 psql 클라이언트로 직접 연결
-PGPASSWORD=1234 psql -h localhost -p 50018 -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
-```
-
-#### mlops pgvector 인프라가 실행 중이지 않은 경우
-
-```bash
-# mlops pgvector 인프라 시작
-cd /workspace/Projects/mlops/mlops/pgvector
-docker-compose up -d
-
-# 상태 확인
-docker ps | grep pgvector_db
-```
-
-#### Docker 실행 시 "relation does not exist" 에러
-
-백엔드가 실행되지만 API 호출 시 테이블이 없다는 에러가 발생하는 경우:
-
-**원인**: TypeORM의 `synchronize` 옵션이 비활성화되어 있음
-
-**해결책**:
-1. `backend/src/infrastructure/persistence/typeorm/typeorm.config.ts`에서 `synchronize: true` 확인
-2. Docker 컨테이너 재빌드:
-   ```bash
-   docker compose down
-   docker compose up -d --build
-   ```
 
 #### CORS 에러 발생
 
@@ -293,38 +228,19 @@ sudo apt-get install -y chromium-browser
 
 전체 스택을 Docker Compose로 실행:
 
-#### 1. 환경 변수 설정
+#### 1. 환경 변수 설정 (선택사항)
 
-루트 디렉토리에 `.env` 파일을 생성하고 다음 내용을 설정:
+루트 디렉토리에 `.env` 파일을 생성하여 포트 설정 가능:
 
 ```bash
-# PostgreSQL 데이터베이스 설정 (mlops pgvector 인프라 사용)
-DB_HOST=host.docker.internal  # Docker 컨테이너에서 호스트 접근
-DB_PORT=50018                  # mlops pgvector 포트
-DB_USER=admin                  # mlops pgvector 유저
-DB_PASSWORD=1234               # mlops pgvector 비밀번호
-DB_NAME=mermaid_saiko          # 프로젝트 데이터베이스
-
-# 포트 설정 (선택사항)
+# 포트 설정 (선택사항, 기본값 사용 가능)
 BACKEND_PORT=3000
 FRONTEND_PORT=8080
 ```
 
-**중요**: Docker 컨테이너에서 mlops pgvector 인프라에 접근하려면 `DB_HOST=host.docker.internal`을 사용하세요.
+**참고**: 데이터베이스 설정은 필요 없습니다. 인메모리 저장소를 사용합니다.
 
-#### 2. 데이터베이스 생성
-
-Docker 실행 전에 mlops pgvector 인프라에서 데이터베이스를 먼저 생성해야 합니다:
-
-```bash
-# mlops pgvector 컨테이너에 접속하여 DB 생성
-docker exec -it pgvector_db psql -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
-
-# 또는 psql 클라이언트로 직접 연결
-PGPASSWORD=1234 psql -h localhost -p 50018 -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
-```
-
-#### 3. Docker Compose 실행
+#### 2. Docker Compose 실행
 
 ```bash
 # 빌드 및 실행
@@ -337,7 +253,7 @@ docker compose logs -f
 docker compose ps
 ```
 
-#### 4. 서비스 접근
+#### 3. 서비스 접근
 
 - **Frontend 웹 UI**: http://localhost:8080
 - **Backend API**: http://localhost:3000/api/v1
@@ -345,8 +261,9 @@ docker compose ps
 **주의**:
 - 프론트엔드는 **nginx를 통한 프록시**로 백엔드 API에 접근합니다 (`/api/*` 경로)
 - 브라우저에서 API를 직접 호출할 필요 없이 프론트엔드 UI만 사용하면 됩니다
+- 서버 재시작 시 렌더링 데이터는 모두 초기화됩니다 (인메모리 저장소)
 
-#### 5. 중지 및 재시작
+#### 4. 중지 및 재시작
 
 ```bash
 # 중지

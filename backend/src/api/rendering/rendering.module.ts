@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { RenderingController } from './rendering.controller';
 import { RenderDiagramUseCase } from '../../application/use-cases/rendering/render-diagram.use-case';
 import { InfrastructureModule } from '../../infrastructure/infrastructure.module';
-import { TypeOrmDiagramRepository } from '../../infrastructure/persistence/typeorm/repositories/typeorm-diagram.repository';
+import { InMemoryDiagramRepository } from '../../infrastructure/persistence/memory/repositories/in-memory-diagram.repository';
 import { MermaidPuppeteerRendererService } from '../../infrastructure/services/mermaid-puppeteer-renderer.service';
 import { DomainEventPublisherService } from '../../infrastructure/events/domain-event-publisher.service';
 
@@ -13,7 +13,7 @@ import { DomainEventPublisherService } from '../../infrastructure/events/domain-
     {
       provide: RenderDiagramUseCase,
       useFactory: (
-        diagramRepository: TypeOrmDiagramRepository,
+        diagramRepository: InMemoryDiagramRepository,
         mermaidRenderer: MermaidPuppeteerRendererService,
         eventPublisher: DomainEventPublisherService,
       ) => {
@@ -24,7 +24,7 @@ import { DomainEventPublisherService } from '../../infrastructure/events/domain-
         );
       },
       inject: [
-        TypeOrmDiagramRepository,
+        InMemoryDiagramRepository,
         MermaidPuppeteerRendererService,
         DomainEventPublisherService,
       ],

@@ -3,7 +3,7 @@ import { ExportController } from './export.controller';
 import { ExportPngUseCase } from '../../application/use-cases/export/export-png.use-case';
 import { ExportSvgUseCase } from '../../application/use-cases/export/export-svg.use-case';
 import { InfrastructureModule } from '../../infrastructure/infrastructure.module';
-import { TypeOrmDiagramImageRepository } from '../../infrastructure/persistence/typeorm/repositories/typeorm-diagram-image.repository';
+import { InMemoryDiagramImageRepository } from '../../infrastructure/persistence/memory/repositories/in-memory-diagram-image.repository';
 import { MermaidPuppeteerRendererService } from '../../infrastructure/services/mermaid-puppeteer-renderer.service';
 import { ImagePuppeteerConverterService } from '../../infrastructure/services/image-puppeteer-converter.service';
 import { DomainEventPublisherService } from '../../infrastructure/events/domain-event-publisher.service';
@@ -15,7 +15,7 @@ import { DomainEventPublisherService } from '../../infrastructure/events/domain-
     {
       provide: ExportPngUseCase,
       useFactory: (
-        diagramImageRepository: TypeOrmDiagramImageRepository,
+        diagramImageRepository: InMemoryDiagramImageRepository,
         mermaidRenderer: MermaidPuppeteerRendererService,
         imageConverter: ImagePuppeteerConverterService,
         eventPublisher: DomainEventPublisherService,
@@ -28,7 +28,7 @@ import { DomainEventPublisherService } from '../../infrastructure/events/domain-
         );
       },
       inject: [
-        TypeOrmDiagramImageRepository,
+        InMemoryDiagramImageRepository,
         MermaidPuppeteerRendererService,
         ImagePuppeteerConverterService,
         DomainEventPublisherService,
@@ -37,7 +37,7 @@ import { DomainEventPublisherService } from '../../infrastructure/events/domain-
     {
       provide: ExportSvgUseCase,
       useFactory: (
-        diagramImageRepository: TypeOrmDiagramImageRepository,
+        diagramImageRepository: InMemoryDiagramImageRepository,
         mermaidRenderer: MermaidPuppeteerRendererService,
         imageConverter: ImagePuppeteerConverterService,
         eventPublisher: DomainEventPublisherService,
@@ -50,7 +50,7 @@ import { DomainEventPublisherService } from '../../infrastructure/events/domain-
         );
       },
       inject: [
-        TypeOrmDiagramImageRepository,
+        InMemoryDiagramImageRepository,
         MermaidPuppeteerRendererService,
         ImagePuppeteerConverterService,
         DomainEventPublisherService,
