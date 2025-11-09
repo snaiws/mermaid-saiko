@@ -46,6 +46,9 @@ coverage/
 postgres_data/
 postgres_dev_data/
 
+# Storage (MCP local files)
+storage/
+
 # Temporary files
 *.tmp
 *.temp

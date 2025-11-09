@@ -65,7 +65,7 @@ export class MermaidMcpServer {
         {
           name: 'render_diagram',
           description:
-            'Renders a Mermaid diagram and returns a PNG image URL from S3',
+            'Renders a Mermaid diagram and returns a PNG image file path (local storage)',
           inputSchema: {
             type: 'object',
             properties: {
@@ -83,9 +83,10 @@ export class MermaidMcpServer {
     // Tool 실행
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (request.params.name === 'render_diagram') {
-        const result = await this.renderDiagramTool.execute(
-          request.params.arguments as any,
-        );
+        const result = await this.renderDiagramTool.execute({
+          ...(request.params.arguments as any),
+          useLocalStorage: true, // stdio 모드는 항상 로컬 저장
+        });
 
         return {
           content: [
