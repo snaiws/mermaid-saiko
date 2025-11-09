@@ -50,13 +50,28 @@ export class ImagePuppeteerConverterService
       <html>
         <head>
           <style>
-            body {
+            * {
               margin: 0;
               padding: 0;
+              box-sizing: border-box;
+            }
+            html, body {
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+            }
+            body {
               background-color: ${backgroundColor};
+              display: flex;
+              align-items: flex-start;
+              justify-content: flex-start;
             }
             #svg-container {
               display: inline-block;
+              line-height: 0;
+            }
+            #svg-container svg {
+              display: block;
             }
           </style>
         </head>
@@ -68,36 +83,41 @@ export class ImagePuppeteerConverterService
 
     await page.setContent(html);
 
-    // SVG 크기 가져오기
-    const svgDimensions = await page.evaluate(() => {
+    // SVG의 실제 렌더링된 크기 가져오기
+    const dimensions = await page.evaluate(() => {
       const svgElement = document.querySelector('svg');
       if (!svgElement) return { width: 800, height: 600 };
 
-      const viewBox = svgElement.getAttribute('viewBox');
-      if (viewBox) {
-        const [, , width, height] = viewBox.split(' ').map(Number);
-        return { width, height };
-      }
+      // SVG의 실제 렌더링된 bounding box 사용
+      const bbox = svgElement.getBoundingClientRect();
 
       return {
-        width: svgElement.width.baseVal.value || 800,
-        height: svgElement.height.baseVal.value || 600,
+        width: Math.ceil(bbox.width) || 800,
+        height: Math.ceil(bbox.height) || 600,
       };
     });
 
-    // 뷰포트 설정
-    const width = options?.width || svgDimensions.width;
-    const height = options?.height || svgDimensions.height;
+    // 뷰포트 설정 (고해상도)
+    const scale = options?.scale || 2; // 2x DPI for high quality
+    const width = options?.width || dimensions.width;
+    const height = options?.height || dimensions.height;
 
     await page.setViewport({
       width: Math.ceil(width),
       height: Math.ceil(height),
+      deviceScaleFactor: scale, // 고해상도 렌더링
     });
 
+    // SVG 엘리먼트만 정확히 캡처
+    const svgElement = await page.$('#svg-container');
+    if (!svgElement) {
+      throw new Error('SVG element not found');
+    }
+
     // 스크린샷 촬영
-    const screenshot = await page.screenshot({
+    const screenshot = await svgElement.screenshot({
       type: 'png',
-      omitBackground: true, // PNG는 투명 배경 지원
+      omitBackground: backgroundColor === 'transparent',
     });
 
     await page.close();
