@@ -3,11 +3,12 @@ import { APP_PIPE, APP_FILTER } from '@nestjs/core';
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { RenderingModule } from './api/rendering/rendering.module';
 import { ExportModule } from './api/export/export.module';
+import { McpModule } from './mcp/mcp.module';
 import { HttpExceptionFilter } from './api/common/http-exception.filter';
 import { AllExceptionsFilter } from './api/common/all-exceptions.filter';
 
 @Module({
-  imports: [InfrastructureModule, RenderingModule, ExportModule],
+  imports: [InfrastructureModule, RenderingModule, ExportModule, McpModule],
   providers: [
     // Global Validation Pipe
     {
