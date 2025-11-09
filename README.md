@@ -348,55 +348,46 @@ Mermaid Saiko는 **MCP 서버**를 내장하여 Claude Desktop 같은 AI 도구�
 
 - **Tool**: `render_diagram`
   - **입력**: Mermaid 코드
-  - **출력**: PNG 이미지 URL (S3/MinIO)
-  - **기능**: 다이어그램 렌더링 → PNG 변환 → S3 업로드 → 공개 URL 반환
+  - **출력**: PNG 이미지 경로/URL
+    - **Stdio 모드**: 로컬 파일 절대 경로 (예: `/path/to/storage/diagrams/123-diagram.png`)
+    - **HTTP/SSE 모드**: S3 공개 URL (예: `http://localhost:50008/bucket/diagram.png`)
+  - **기능**: 다이어그램 렌더링 → PNG 변환 → 저장 → 경로/URL 반환
 
 ### 1. Stdio MCP (Claude Desktop)
 
-Claude Desktop에서 사용하는 stdio 기반 MCP 서버입니다.
+Claude Desktop에서 사용하는 stdio 기반 MCP 서버입니다. **로컬 파일 시스템에 저장**하고 절대 경로를 반환합니다.
 
 #### 설정 방법
 
-1. **환경 변수 설정** (`backend/.env`):
-
-```bash
-# S3/MinIO Configuration
-S3_ENDPOINT=http://localhost:50008
-S3_REGION=us-east-1
-S3_ACCESS_KEY_ID=admin
-S3_SECRET_ACCESS_KEY=password
-S3_BUCKET_NAME=mermaid-diagrams
-```
-
-2. **MCP 서버 실행**:
+1. **백엔드 빌드**:
 
 ```bash
 cd backend
-npm run start:mcp
+npm install
+npm run build
 ```
 
-3. **Claude Desktop 설정** (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac):
+2. **Claude Desktop 설정** (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac):
 
 ```json
 {
   "mcpServers": {
     "mermaid-saiko": {
       "command": "node",
-      "args": ["/absolute/path/to/backend/dist/mcp/mcp.server.js"],
-      "env": {
-        "S3_ENDPOINT": "http://localhost:50008",
-        "S3_ACCESS_KEY_ID": "admin",
-        "S3_SECRET_ACCESS_KEY": "password",
-        "S3_BUCKET_NAME": "mermaid-diagrams"
-      }
+      "args": ["/absolute/path/to/mermaid-saiko/backend/dist/mcp/mcp.server.js"]
     }
   }
 }
 ```
 
-4. **Claude Desktop 재시작**
+**중요**: `args`의 경로는 반드시 절대 경로여야 합니다. 예시:
+- Mac: `"/Users/yourname/Projects/mermaid-saiko/backend/dist/mcp/mcp.server.js"`
+- Linux: `"/home/yourname/Projects/mermaid-saiko/backend/dist/mcp/mcp.server.js"`
+- Windows: `"C:\\Users\\yourname\\Projects\\mermaid-saiko\\backend\\dist\\mcp\\mcp.server.js"`
 
-이제 Claude Desktop에서 Mermaid 코드를 작성하면 자동으로 이미지를 생성하고 S3 링크를 반환합니다.
+3. **Claude Desktop 재시작**
+
+이제 Claude Desktop에서 Mermaid 코드를 작성하면 자동으로 이미지를 생성하고 **로컬 파일 경로**를 반환합니다.
 
 #### 사용 예시 (Claude Desktop)
 
@@ -412,14 +403,20 @@ Input:
 Output:
 {
   "success": true,
-  "imageUrl": "http://localhost:50008/mermaid-diagrams/abc123-diagram.png",
+  "imageUrl": "/absolute/path/to/backend/storage/diagrams/1699876543210-diagram.png",
   "diagramType": "flowchart"
 }
 ```
 
+생성된 이미지는 `backend/storage/diagrams/` 디렉토리에 저장되며, Claude Desktop이 해당 파일을 직접 읽을 수 있습니다.
+
 ### 2. HTTP/SSE MCP (Web Clients)
 
-HTTP와 Server-Sent Events를 사용하는 MCP 서버입니다.
+HTTP와 Server-Sent Events를 사용하는 MCP 서버입니다. **S3/MinIO에 업로드**하고 공개 URL을 반환합니다.
+
+#### 사전 요구사항
+
+HTTP/SSE 모드를 사용하려면 S3/MinIO가 필요합니다. 아래 "S3/MinIO 설정" 섹션을 먼저 완료하세요.
 
 #### 엔드포인트
 
@@ -460,11 +457,18 @@ fetch('http://localhost:3000/mcp/message', {
     }
   })
 });
+
+// 응답 예시
+{
+  "success": true,
+  "imageUrl": "http://localhost:50008/mermaid-diagrams/abc123-diagram.png",
+  "diagramType": "flowchart"
+}
 ```
 
 ### S3/MinIO 설정
 
-MCP는 MinIO를 사용하여 이미지를 저장합니다.
+HTTP/SSE MCP 모드는 MinIO를 사용하여 이미지를 저장합니다. (Stdio 모드는 S3 불필요)
 
 #### MinIO 실행 (Docker)
 
