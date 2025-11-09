@@ -75,7 +75,6 @@ mermaid-saiko/
 │   └── architecture/
 │
 ├── docker-compose.yml        # 프로덕션 배포
-├── docker-compose.dev.yml    # 개발 환경 (DB만)
 └── README.md
 ```
 
@@ -115,25 +114,32 @@ cp frontend/.env.example frontend/.env
 
 #### 3. PostgreSQL 데이터베이스 설정
 
-**Option 1: 기존 PostgreSQL 사용 (권장)**
+이 프로젝트는 **인프라에 대한 책임이 없으며**, `/workspace/Projects/mlops/mlops/pgvector`에서 관리되는 PostgreSQL 인프라를 사용합니다.
 
-기존에 실행 중인 PostgreSQL이 있다면:
+**mlops pgvector 인프라 정보:**
+- 포트: `50018`
+- 유저: `admin`
+- 비밀번호: `1234`
+- 기본 DB: `vectordb`
 
-```bash
-# PostgreSQL에 접속하여 데이터베이스 생성
-psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+**데이터베이스 생성:**
 
-# 또는 Docker 컨테이너로 실행 중인 경우
-docker exec -it <postgres-container-name> psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
-```
-
-**Option 2: Docker Compose로 새로 설치**
+mlops pgvector 인프라가 실행 중인지 확인한 후, 다음 명령으로 프로젝트용 데이터베이스를 생성하세요:
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
+# mlops pgvector 컨테이너에 접속하여 mermaid_saiko DB 생성
+docker exec -it pgvector_db psql -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
+
+# 또는 psql 클라이언트로 직접 연결
+PGPASSWORD=1234 psql -h localhost -p 50018 -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
 ```
 
-이 명령어는 PostgreSQL만 Docker 컨테이너로 실행하고, 데이터베이스를 자동 생성합니다.
+**mlops 인프라 시작 (필요한 경우):**
+
+```bash
+cd /workspace/Projects/mlops/mlops/pgvector
+docker-compose up -d
+```
 
 #### 4. 백엔드 의존성 설치 및 실행
 
@@ -200,8 +206,22 @@ http://localhost:5173
 #### 백엔드 실행 시 "database does not exist" 에러
 
 ```bash
-# 해결: 데이터베이스를 수동으로 생성
-docker exec -it <postgres-container-name> psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+# 해결: mlops pgvector에 데이터베이스를 수동으로 생성
+docker exec -it pgvector_db psql -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
+
+# 또는 psql 클라이언트로 직접 연결
+PGPASSWORD=1234 psql -h localhost -p 50018 -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
+```
+
+#### mlops pgvector 인프라가 실행 중이지 않은 경우
+
+```bash
+# mlops pgvector 인프라 시작
+cd /workspace/Projects/mlops/mlops/pgvector
+docker-compose up -d
+
+# 상태 확인
+docker ps | grep pgvector_db
 ```
 
 #### Docker 실행 시 "relation does not exist" 에러
@@ -278,30 +298,30 @@ sudo apt-get install -y chromium-browser
 루트 디렉토리에 `.env` 파일을 생성하고 다음 내용을 설정:
 
 ```bash
-# PostgreSQL 데이터베이스 설정
-DB_HOST=host.docker.internal  # 또는 실제 DB 호스트
-DB_PORT=5432                   # PostgreSQL 포트
-DB_USER=postgres               # DB 사용자명
-DB_PASSWORD=yourpassword       # DB 비밀번호
-DB_NAME=mermaid_saiko          # DB 이름
+# PostgreSQL 데이터베이스 설정 (mlops pgvector 인프라 사용)
+DB_HOST=host.docker.internal  # Docker 컨테이너에서 호스트 접근
+DB_PORT=50018                  # mlops pgvector 포트
+DB_USER=admin                  # mlops pgvector 유저
+DB_PASSWORD=1234               # mlops pgvector 비밀번호
+DB_NAME=mermaid_saiko          # 프로젝트 데이터베이스
 
 # 포트 설정 (선택사항)
 BACKEND_PORT=3000
 FRONTEND_PORT=8080
 ```
 
-**중요**: Docker 컨테이너에서 로컬 PostgreSQL에 접근하려면 `DB_HOST=host.docker.internal`을 사용하세요.
+**중요**: Docker 컨테이너에서 mlops pgvector 인프라에 접근하려면 `DB_HOST=host.docker.internal`을 사용하세요.
 
 #### 2. 데이터베이스 생성
 
-Docker 실행 전에 PostgreSQL 데이터베이스를 먼저 생성해야 합니다:
+Docker 실행 전에 mlops pgvector 인프라에서 데이터베이스를 먼저 생성해야 합니다:
 
 ```bash
-# 로컬 PostgreSQL에 접속하여 DB 생성
-psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+# mlops pgvector 컨테이너에 접속하여 DB 생성
+docker exec -it pgvector_db psql -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
 
-# 또는 Docker PostgreSQL 컨테이너에서
-docker exec -it <postgres-container-name> psql -U postgres -c "CREATE DATABASE mermaid_saiko;"
+# 또는 psql 클라이언트로 직접 연결
+PGPASSWORD=1234 psql -h localhost -p 50018 -U admin -d vectordb -c "CREATE DATABASE mermaid_saiko;"
 ```
 
 #### 3. Docker Compose 실행
