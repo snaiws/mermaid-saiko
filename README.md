@@ -1,16 +1,18 @@
 # Mermaid Saiko
 
-> Mermaid 다이어그램 실시간 렌더링 & Export 서비스
+> Mermaid 다이어그램 실시간 렌더링 & Export 서비스 + MCP 통합
 
 AI가 생성한 Mermaid 코드를 즉시 시각화하고, 이미지로 변환할 수 있는 웹 기반 서비스입니다.
+**Model Context Protocol (MCP)** 서버를 내장하여 Claude Desktop 등 MCP 클라이언트와 통합 가능합니다.
 
 ---
 
 ## 주요 기능
 
-- **실시간 렌더링**: 코드 수정 시 자동으로 다이어그램 업데이트 (live preview)
+- **실시간 렌더링**: 코드 수정 시 자동으로 다이어그램 업데이트 (Ctrl/⌘ + Enter)
 - **이미지 Export**: PNG, SVG 등 다양한 포맷으로 다운로드
 - **REST API**: 프로그래밍 방식으로 다이어그램 생성 및 export
+- **MCP 서버**: Claude Desktop에서 다이어그램을 생성하고 S3에 업로드 (stdio & HTTP/SSE)
 - **모든 Mermaid 지원**: 플로우차트, 시퀀스, 클래스, ER 다이어그램 등 모든 타입 지원
 
 ---
@@ -35,6 +37,8 @@ AI가 생성한 Mermaid 코드를 즉시 시각화하고, 이미지로 변환할
 - **Container**: Docker & Docker Compose
 - **Rendering**: Mermaid.js (서버 사이드)
 - **Image Export**: Puppeteer (PNG), 직접 변환 (SVG)
+- **MCP Protocol**: @modelcontextprotocol/sdk (stdio & HTTP/SSE)
+- **Object Storage**: AWS SDK (S3/MinIO)
 
 ---
 
@@ -46,8 +50,9 @@ mermaid-saiko/
 │   ├── src/
 │   │   ├── domain/          # Domain Layer (비즈니스 로직)
 │   │   ├── application/     # Application Layer (Use Cases)
-│   │   ├── infrastructure/  # Infrastructure Layer (DB, External)
+│   │   ├── infrastructure/  # Infrastructure Layer (DB, External, S3)
 │   │   ├── api/             # API Layer (Controllers)
+│   │   ├── mcp/             # MCP Server (stdio & HTTP/SSE)
 │   │   ├── config/          # Configuration
 │   │   └── shared/          # Shared utilities
 │   ├── Dockerfile
@@ -332,6 +337,169 @@ Content-Type: application/json
 ```
 
 **응답**: SVG 파일 (binary)
+
+---
+
+## MCP (Model Context Protocol) 사용법
+
+Mermaid Saiko는 **MCP 서버**를 내장하여 Claude Desktop 같은 AI 도구에서 직접 다이어그램을 생성하고 S3에 업로드할 수 있습니다.
+
+### MCP 기능
+
+- **Tool**: `render_diagram`
+  - **입력**: Mermaid 코드
+  - **출력**: PNG 이미지 URL (S3/MinIO)
+  - **기능**: 다이어그램 렌더링 → PNG 변환 → S3 업로드 → 공개 URL 반환
+
+### 1. Stdio MCP (Claude Desktop)
+
+Claude Desktop에서 사용하는 stdio 기반 MCP 서버입니다.
+
+#### 설정 방법
+
+1. **환경 변수 설정** (`backend/.env`):
+
+```bash
+# S3/MinIO Configuration
+S3_ENDPOINT=http://localhost:50008
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=admin
+S3_SECRET_ACCESS_KEY=password
+S3_BUCKET_NAME=mermaid-diagrams
+```
+
+2. **MCP 서버 실행**:
+
+```bash
+cd backend
+npm run start:mcp
+```
+
+3. **Claude Desktop 설정** (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac):
+
+```json
+{
+  "mcpServers": {
+    "mermaid-saiko": {
+      "command": "node",
+      "args": ["/absolute/path/to/backend/dist/mcp/mcp.server.js"],
+      "env": {
+        "S3_ENDPOINT": "http://localhost:50008",
+        "S3_ACCESS_KEY_ID": "admin",
+        "S3_SECRET_ACCESS_KEY": "password",
+        "S3_BUCKET_NAME": "mermaid-diagrams"
+      }
+    }
+  }
+}
+```
+
+4. **Claude Desktop 재시작**
+
+이제 Claude Desktop에서 Mermaid 코드를 작성하면 자동으로 이미지를 생성하고 S3 링크를 반환합니다.
+
+#### 사용 예시 (Claude Desktop)
+
+```
+You: "Create a flowchart showing user authentication process"
+
+Claude: [Uses render_diagram tool]
+Input:
+{
+  "mermaidCode": "flowchart TD\n  A[User Login] --> B{Valid?}\n  B -->|Yes| C[Success]\n  B -->|No| D[Error]"
+}
+
+Output:
+{
+  "success": true,
+  "imageUrl": "http://localhost:50008/mermaid-diagrams/abc123-diagram.png",
+  "diagramType": "flowchart"
+}
+```
+
+### 2. HTTP/SSE MCP (Web Clients)
+
+HTTP와 Server-Sent Events를 사용하는 MCP 서버입니다.
+
+#### 엔드포인트
+
+- **SSE 연결**: `GET http://localhost:3000/mcp/sse`
+- **메시지 전송**: `POST http://localhost:3000/mcp/message`
+
+#### 사용 예시
+
+```javascript
+// SSE 연결
+const eventSource = new EventSource('http://localhost:3000/mcp/sse');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'connected') {
+    sessionId = data.sessionId;
+  } else {
+    console.log('Response:', data);
+  }
+};
+
+// 다이어그램 렌더링 요청
+fetch('http://localhost:3000/mcp/message', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'x-session-id': sessionId
+  },
+  body: JSON.stringify({
+    jsonrpc: '2.0',
+    id: 1,
+    method: 'tools/call',
+    params: {
+      name: 'render_diagram',
+      arguments: {
+        mermaidCode: 'graph LR\n  A --> B'
+      }
+    }
+  })
+});
+```
+
+### S3/MinIO 설정
+
+MCP는 MinIO를 사용하여 이미지를 저장합니다.
+
+#### MinIO 실행 (Docker)
+
+```bash
+docker run -d \
+  -p 50008:9000 \
+  -p 50009:9001 \
+  -e MINIO_ROOT_USER=admin \
+  -e MINIO_ROOT_PASSWORD=password \
+  --name minio \
+  minio/minio server /data --console-address ":9001"
+```
+
+#### 버킷 생성
+
+1. MinIO Console 접속: `http://localhost:50009`
+2. 로그인: `admin` / `password`
+3. **Buckets** → **Create Bucket** → 이름: `mermaid-diagrams`
+4. **Access Policy** → `public` (다운로드 가능하도록)
+
+### 아키텍처
+
+MCP 서버는 **기존 Use Case를 재사용**하여 DDD 아키텍처를 유지합니다:
+
+```
+MCP Layer (Interface)
+    ↓
+RenderDiagramTool
+    ↓
+ExportPngUseCase (Application Layer)
+    ↓
+MermaidRenderer + ImageConverter (Infrastructure)
+    ↓
+S3Service → MinIO
+```
 
 ---
 
