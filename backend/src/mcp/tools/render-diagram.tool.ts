@@ -17,16 +17,17 @@ export interface RenderDiagramOutput {
 }
 
 export class RenderDiagramTool {
-  private readonly localStorageDir = path.join(
-    process.cwd(),
-    'storage',
-    'diagrams',
-  );
+  private readonly localStorageDir: string;
 
   constructor(
     private readonly exportPngUseCase: ExportPngUseCase,
     private readonly s3Service: S3Service,
-  ) {}
+    basePath?: string,
+  ) {
+    // basePath가 주어지면 사용, 아니면 process.cwd() 사용
+    const baseDir = basePath || process.cwd();
+    this.localStorageDir = path.join(baseDir, 'storage', 'diagrams');
+  }
 
   async execute(input: RenderDiagramInput): Promise<RenderDiagramOutput> {
     try {
@@ -49,8 +50,7 @@ export class RenderDiagramTool {
         await fs.mkdir(this.localStorageDir, { recursive: true });
 
         const fileName = `${Date.now()}-${exportResult.fileName}`;
-        const relativePath = path.join('storage', 'diagrams', fileName);
-        const absolutePath = path.join(process.cwd(), relativePath);
+        const absolutePath = path.join(this.localStorageDir, fileName);
 
         await fs.writeFile(absolutePath, imageBuffer);
 

@@ -40,7 +40,9 @@ export class MermaidMcpServer {
       eventPublisher,
     );
 
-    this.renderDiagramTool = new RenderDiagramTool(exportPngUseCase, s3Service);
+    // MCP_BASE_PATH 환경 변수로 base path 설정 가능
+    const basePath = process.env.MCP_BASE_PATH;
+    this.renderDiagramTool = new RenderDiagramTool(exportPngUseCase, s3Service, basePath);
 
     // MCP Server 초기화
     this.server = new Server(
