@@ -2,13 +2,10 @@ import React, { useEffect } from 'react';
 import { CodeEditor } from '../features/editor/components/CodeEditor';
 import { DiagramPreview } from '../features/rendering/components/DiagramPreview';
 import { ExportButton } from '../features/export/components/ExportButton';
-import { Button } from '../shared/components/Button';
 import { useRenderDiagram } from '../features/rendering/hooks/useRenderDiagram';
-import { useEditorStore } from '../features/editor/stores/editorStore';
 
 export const EditorPage: React.FC = () => {
   const { renderDiagram } = useRenderDiagram();
-  const { canUndo, canRedo, undo, redo } = useEditorStore();
 
   // 초기 렌더링
   useEffect(() => {
@@ -22,23 +19,6 @@ export const EditorPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-800">Mermaid Saiko</h1>
 
         <div className="flex items-center gap-2">
-          <Button
-            onClick={undo}
-            disabled={!canUndo()}
-            variant="secondary"
-          >
-            Undo
-          </Button>
-          <Button
-            onClick={redo}
-            disabled={!canRedo()}
-            variant="secondary"
-          >
-            Redo
-          </Button>
-          <Button onClick={renderDiagram} variant="primary">
-            Render
-          </Button>
           <ExportButton />
         </div>
       </header>
@@ -48,8 +28,11 @@ export const EditorPage: React.FC = () => {
         {/* Editor Panel */}
         <div className="w-1/2 border-r">
           <div className="h-full flex flex-col">
-            <div className="bg-gray-100 px-4 py-2 border-b">
+            <div className="bg-gray-100 px-4 py-2 border-b flex items-center justify-between">
               <h2 className="font-semibold text-gray-700">Mermaid Code</h2>
+              <span className="text-xs text-gray-500">
+                Press <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-gray-700">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-gray-700">Enter</kbd> to render
+              </span>
             </div>
             <div className="flex-1">
               <CodeEditor />
