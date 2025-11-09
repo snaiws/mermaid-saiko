@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { CodeEditor } from '../features/editor/components/CodeEditor';
 import { DiagramPreview } from '../features/rendering/components/DiagramPreview';
 import { ExportButton } from '../features/export/components/ExportButton';
@@ -11,6 +11,13 @@ export const EditorPage: React.FC = () => {
   useEffect(() => {
     renderDiagram();
   }, []);
+
+  // Mac인지 확인
+  const isMac = useMemo(() => {
+    return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  }, []);
+
+  const modifierKey = isMac ? '⌘' : 'Ctrl';
 
   return (
     <div className="h-screen flex flex-col">
@@ -31,7 +38,7 @@ export const EditorPage: React.FC = () => {
             <div className="bg-gray-100 px-4 py-2 border-b flex items-center justify-between">
               <h2 className="font-semibold text-gray-700">Mermaid Code</h2>
               <span className="text-xs text-gray-500">
-                Press <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-gray-700">Ctrl</kbd> + <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-gray-700">Enter</kbd> to render
+                Press <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-gray-700">{modifierKey}</kbd> + <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-gray-700">Enter</kbd> to render
               </span>
             </div>
             <div className="flex-1">
