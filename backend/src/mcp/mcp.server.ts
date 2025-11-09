@@ -67,13 +67,19 @@ export class MermaidMcpServer {
         {
           name: 'render_diagram',
           description:
-            'Renders a Mermaid diagram and returns a PNG image file path (local storage)',
+            'Renders a Mermaid diagram and returns a PNG image file path (local storage). ' +
+            'Images are saved to {MCP_BASE_PATH}/storage/diagrams/ if MCP_BASE_PATH env var is set, ' +
+            'otherwise to {process.cwd()}/storage/diagrams/.',
           inputSchema: {
             type: 'object',
             properties: {
               mermaidCode: {
                 type: 'string',
                 description: 'The Mermaid diagram code to render',
+              },
+              basePath: {
+                type: 'string',
+                description: 'Optional base path for storing diagrams. If provided, images will be saved to {basePath}/storage/diagrams/. If not provided, uses MCP_BASE_PATH env var or process.cwd()',
               },
             },
             required: ['mermaidCode'],
