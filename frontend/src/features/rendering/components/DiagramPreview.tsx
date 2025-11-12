@@ -11,15 +11,6 @@ export const DiagramPreview: React.FC = () => {
   useEffect(() => {
     if (containerRef.current && renderedSvg) {
       containerRef.current.innerHTML = renderedSvg;
-
-      // SVG 크기 속성 제거하여 반응형으로 만들기
-      const svgElement = containerRef.current.querySelector('svg');
-      if (svgElement) {
-        svgElement.removeAttribute('width');
-        svgElement.removeAttribute('height');
-        svgElement.style.maxWidth = '100%';
-        svgElement.style.height = 'auto';
-      }
     }
   }, [renderedSvg]);
 
@@ -77,14 +68,13 @@ export const DiagramPreview: React.FC = () => {
             </div>
 
             {/* 다이어그램 컨테이너 */}
-            <TransformComponent wrapperClass="w-full h-full">
+            <TransformComponent
+              wrapperClass="w-full h-full"
+              contentClass="flex items-center justify-center"
+            >
               <div
                 ref={containerRef}
-                style={{
-                  display: 'inline-block',
-                  minWidth: 'min-content',
-                  minHeight: 'min-content',
-                }}
+                className="inline-block"
               ></div>
             </TransformComponent>
           </>
