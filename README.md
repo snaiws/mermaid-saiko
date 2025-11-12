@@ -19,13 +19,17 @@ AI가 생성한 Mermaid 코드를 즉시 시각화하고, 이미지로 변환할
 
 ## 기술 스택
 
-### Backend
+### Monorepo
+- **Package Manager**: pnpm workspaces
+- **Structure**: packages/ (backend, frontend, shared)
+
+### Backend (@mermaid-saiko/backend)
 - **Framework**: NestJS 10.x
 - **Language**: TypeScript 5.3
 - **Storage**: In-Memory (일회성 렌더링, 저장 기능 없음)
 - **Architecture**: DDD (Domain-Driven Design)
 
-### Frontend
+### Frontend (@mermaid-saiko/frontend)
 - **Framework**: React 18.3
 - **Build Tool**: Vite 5.x
 - **Language**: TypeScript 5.3
@@ -33,43 +37,57 @@ AI가 생성한 Mermaid 코드를 즉시 시각화하고, 이미지로 변환할
 - **Code Editor**: Monaco Editor 4.x
 - **Styling**: Tailwind CSS 3.x
 
+### Shared (@mermaid-saiko/shared)
+- **Mermaid Version**: 11.12.1 (통일)
+- **Common Config**: 테마, 폰트, 커스텀 스타일
+- **Purpose**: 프론트/백엔드 렌더링 일관성 보장
+
 ### Infrastructure
 - **Container**: Docker & Docker Compose
-- **Rendering**: Mermaid.js (서버 사이드)
+- **Rendering**: Mermaid.js 11.12.1 (프론트엔드 & 백엔드)
 - **Image Export**: Puppeteer (PNG), 직접 변환 (SVG)
 - **MCP Protocol**: @modelcontextprotocol/sdk (stdio & HTTP/SSE)
 - **Object Storage**: AWS SDK (S3/MinIO)
 
 ---
 
-## 프로젝트 구조
+## 프로젝트 구조 (Monorepo)
 
 ```
 mermaid-saiko/
-├── backend/                  # NestJS 백엔드
-│   ├── src/
-│   │   ├── domain/          # Domain Layer (비즈니스 로직)
-│   │   ├── application/     # Application Layer (Use Cases)
-│   │   ├── infrastructure/  # Infrastructure Layer (DB, External, S3)
-│   │   ├── api/             # API Layer (Controllers)
-│   │   ├── mcp/             # MCP Server (stdio & HTTP/SSE)
-│   │   ├── config/          # Configuration
-│   │   └── shared/          # Shared utilities
-│   ├── Dockerfile
-│   └── package.json
-│
-├── frontend/                 # React 프론트엔드
-│   ├── src/
-│   │   ├── pages/           # 페이지 컴포넌트
-│   │   ├── features/        # Feature 기반 모듈
-│   │   │   ├── editor/      # 에디터 기능
-│   │   │   ├── rendering/   # 렌더링 기능
-│   │   │   └── export/      # Export 기능
-│   │   ├── shared/          # 공통 컴포넌트
-│   │   └── types/           # TypeScript 타입
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   └── package.json
+├── packages/
+│   ├── backend/             # @mermaid-saiko/backend - NestJS 백엔드
+│   │   ├── src/
+│   │   │   ├── domain/          # Domain Layer (비즈니스 로직)
+│   │   │   ├── application/     # Application Layer (Use Cases)
+│   │   │   ├── infrastructure/  # Infrastructure Layer (DB, External, S3)
+│   │   │   ├── api/             # API Layer (Controllers)
+│   │   │   ├── mcp/             # MCP Server (stdio & HTTP/SSE)
+│   │   │   ├── config/          # Configuration
+│   │   │   └── shared/          # Shared utilities
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── frontend/            # @mermaid-saiko/frontend - React 프론트엔드
+│   │   ├── src/
+│   │   │   ├── pages/           # 페이지 컴포넌트
+│   │   │   ├── features/        # Feature 기반 모듈
+│   │   │   │   ├── editor/      # 에디터 기능
+│   │   │   │   ├── rendering/   # 렌더링 기능
+│   │   │   │   └── export/      # Export 기능
+│   │   │   ├── shared/          # 공통 컴포넌트
+│   │   │   └── types/           # TypeScript 타입
+│   │   ├── Dockerfile
+│   │   ├── nginx.conf
+│   │   └── package.json
+│   │
+│   └── shared/              # @mermaid-saiko/shared - 공통 설정
+│       ├── src/
+│       │   ├── mermaid/
+│       │   │   └── config.ts    # Mermaid 공통 설정
+│       │   └── index.ts
+│       ├── package.json
+│       └── tsconfig.json
 │
 ├── documents/                # 프로젝트 문서 (기획, 설계)
 │   ├── planning/
@@ -78,6 +96,8 @@ mermaid-saiko/
 │   ├── api/
 │   └── architecture/
 │
+├── package.json              # 루트 workspace 설정
+├── pnpm-workspace.yaml       # pnpm workspace 구성
 ├── docker-compose.yml        # 프로덕션 배포
 └── README.md
 ```
@@ -88,15 +108,15 @@ mermaid-saiko/
 
 ### 사전 요구사항
 
-- **Node.js**: v22+
-- **npm**: v10+
+- **Node.js**: v18+
+- **pnpm**: v8+ (권장 패키지 매니저)
 - **Docker & Docker Compose**: (선택, 배포용)
 
 **참고**: 이 프로젝트는 데이터베이스를 사용하지 않습니다. 렌더링과 export는 일회성 작업이며, 인메모리 저장소(TTL 1시간)를 사용합니다.
 
 ---
 
-### 개발 환경 설정
+### 개발 환경 설정 (Monorepo)
 
 #### 1. 저장소 클론
 
@@ -105,37 +125,63 @@ git clone https://github.com/your-username/mermaid-saiko.git
 cd mermaid-saiko
 ```
 
-#### 2. 환경 변수 설정
+#### 2. pnpm 설치 (없는 경우)
+
+```bash
+npm install -g pnpm
+```
+
+#### 3. 환경 변수 설정
 
 ```bash
 # 루트 디렉토리
 cp .env.example .env
 
 # 백엔드
-cp backend/.env.example backend/.env
+cp packages/backend/.env.example packages/backend/.env
 
 # 프론트엔드
-cp frontend/.env.example frontend/.env
+cp packages/frontend/.env.example packages/frontend/.env
 ```
 
-#### 3. 백엔드 의존성 설치 및 실행
+#### 4. 의존성 설치
 
 ```bash
-cd backend
-npm install
+# 루트에서 모든 패키지 의존성 설치
+pnpm install
 ```
 
-**중요**: 처음 실행 시 다음 의존성들이 자동으로 설치됩니다:
-- `class-validator`, `class-transformer` (Validation)
-- `mermaid`, `puppeteer` (다이어그램 렌더링 & 이미지 변환)
+이 명령은 다음을 자동으로 수행합니다:
+- `packages/shared` - Mermaid 공통 설정
+- `packages/backend` - NestJS 백엔드
+- `packages/frontend` - React 프론트엔드
+
+#### 5. shared 패키지 빌드
 
 ```bash
-npm run start:dev
+pnpm build:shared
 ```
 
-백엔드가 `http://localhost:3000`에서 실행됩니다.
+#### 6. 개발 서버 실행
+
+**옵션 1: 모든 서비스 동시 실행**
+```bash
+pnpm dev
+```
+
+**옵션 2: 개별 실행**
+```bash
+# 백엔드만
+pnpm dev:backend
+
+# 프론트엔드만
+pnpm dev:frontend
+```
 
 **실행 확인**:
+- Backend: `http://localhost:3000`
+- Frontend: `http://localhost:5173`
+
 ```
 ✅ Server is running on http://localhost:3000
 ✅ Mapped {/api/v1/rendering/render, POST} route
