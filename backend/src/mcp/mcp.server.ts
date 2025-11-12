@@ -40,7 +40,9 @@ export class MermaidMcpServer {
       eventPublisher,
     );
 
-    this.renderDiagramTool = new RenderDiagramTool(exportPngUseCase, s3Service);
+    // MCP_BASE_PATH 환경 변수로 base path 설정 가능
+    const basePath = process.env.MCP_BASE_PATH;
+    this.renderDiagramTool = new RenderDiagramTool(exportPngUseCase, s3Service, basePath);
 
     // MCP Server 초기화
     this.server = new Server(
@@ -65,7 +67,9 @@ export class MermaidMcpServer {
         {
           name: 'render_diagram',
           description:
-            'Renders a Mermaid diagram and returns either a PNG file path or base64-encoded PNG data',
+            'Renders a Mermaid diagram and returns either a PNG file path or base64-encoded PNG data. ' +
+            'Images are saved to {MCP_BASE_PATH}/storage/diagrams/ if MCP_BASE_PATH env var is set, ' +
+            'otherwise to {process.cwd()}/storage/diagrams/.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -77,6 +81,10 @@ export class MermaidMcpServer {
                 type: 'string',
                 enum: ['file', 'base64'],
                 description: 'Output type: "file" (saves to disk and returns file path) or "base64" (returns base64-encoded PNG). Default: "file"',
+              },
+              basePath: {
+                type: 'string',
+                description: 'Optional base path for storing diagrams. If provided, images will be saved to {basePath}/storage/diagrams/. If not provided, uses MCP_BASE_PATH env var or process.cwd()',
               },
             },
             required: ['mermaidCode'],

@@ -9,6 +9,7 @@ export type OutputType = 'file' | 'base64';
 export interface RenderDiagramInput {
   mermaidCode: string;
   outputType?: OutputType; // 'file' (default) or 'base64'
+  basePath?: string; // 저장 경로 (optional)
   useLocalStorage?: boolean; // stdio 모드에서는 true
 }
 
@@ -21,16 +22,17 @@ export interface RenderDiagramOutput {
 }
 
 export class RenderDiagramTool {
-  private readonly localStorageDir = path.join(
-    process.cwd(),
-    'storage',
-    'diagrams',
-  );
+  private readonly localStorageDir: string;
 
   constructor(
     private readonly exportPngUseCase: ExportPngUseCase,
     private readonly s3Service: S3Service,
-  ) {}
+    basePath?: string,
+  ) {
+    // basePath가 주어지면 사용, 아니면 process.cwd() 사용
+    const baseDir = basePath || process.cwd();
+    this.localStorageDir = path.join(baseDir, 'storage', 'diagrams');
+  }
 
   async execute(input: RenderDiagramInput): Promise<RenderDiagramOutput> {
     try {
@@ -65,11 +67,15 @@ export class RenderDiagramTool {
 
       if (input.useLocalStorage) {
         // stdio 모드: 로컬 파일 시스템에 저장
-        await fs.mkdir(this.localStorageDir, { recursive: true });
+        // input.basePath가 주어지면 우선 사용, 아니면 생성자에서 설정한 경로 사용
+        const storageDir = input.basePath
+          ? path.join(input.basePath, 'storage', 'diagrams')
+          : this.localStorageDir;
+
+        await fs.mkdir(storageDir, { recursive: true });
 
         const fileName = `${Date.now()}-${exportResult.fileName}`;
-        const relativePath = path.join('storage', 'diagrams', fileName);
-        const absolutePath = path.join(process.cwd(), relativePath);
+        const absolutePath = path.join(storageDir, fileName);
 
         await fs.writeFile(absolutePath, imageBuffer);
 

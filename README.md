@@ -374,16 +374,32 @@ npm run build
   "mcpServers": {
     "mermaid-saiko": {
       "command": "node",
-      "args": ["/absolute/path/to/mermaid-saiko/backend/dist/mcp/mcp.server.js"]
+      "args": ["/absolute/path/to/mermaid-saiko/backend/dist/mcp/mcp.server.js"],
+      "env": {
+        "MCP_BASE_PATH": "/path/to/your/workspace"
+      }
     }
   }
 }
 ```
 
-**중요**: `args`의 경로는 반드시 절대 경로여야 합니다. 예시:
-- Mac: `"/Users/yourname/Projects/mermaid-saiko/backend/dist/mcp/mcp.server.js"`
-- Linux: `"/home/yourname/Projects/mermaid-saiko/backend/dist/mcp/mcp.server.js"`
-- Windows: `"C:\\Users\\yourname\\Projects\\mermaid-saiko\\backend\\dist\\mcp\\mcp.server.js"`
+**중요**:
+- `args`의 경로는 반드시 절대 경로여야 합니다
+- `MCP_BASE_PATH` (선택사항): 다이어그램 이미지를 저장할 기본 경로
+  - 설정하지 않으면 MCP 서버가 실행된 디렉토리를 사용합니다
+  - 설정 시 해당 경로 아래 `storage/diagrams/` 폴더에 저장됩니다
+  - Claude Desktop이 접근 가능한 경로여야 합니다
+
+**예시**:
+- Mac:
+  - args: `"/Users/yourname/Projects/mermaid-saiko/backend/dist/mcp/mcp.server.js"`
+  - MCP_BASE_PATH: `"/Users/yourname/Documents"` (선택사항)
+- Linux:
+  - args: `"/home/yourname/Projects/mermaid-saiko/backend/dist/mcp/mcp.server.js"`
+  - MCP_BASE_PATH: `"/home/yourname/workspace"` (선택사항)
+- Windows:
+  - args: `"C:\\Users\\yourname\\Projects\\mermaid-saiko\\backend\\dist\\mcp\\mcp.server.js"`
+  - MCP_BASE_PATH: `"C:\\Users\\yourname\\Documents"` (선택사항)
 
 3. **Claude Desktop 재시작**
 
@@ -403,12 +419,16 @@ Input:
 Output:
 {
   "success": true,
-  "imageUrl": "/absolute/path/to/backend/storage/diagrams/1699876543210-diagram.png",
+  "imageUrl": "/absolute/path/to/storage/diagrams/1699876543210-diagram.png",
   "diagramType": "flowchart"
 }
 ```
 
-생성된 이미지는 `backend/storage/diagrams/` 디렉토리에 저장되며, Claude Desktop이 해당 파일을 직접 읽을 수 있습니다.
+**저장 위치**:
+- `MCP_BASE_PATH`를 설정한 경우: `{MCP_BASE_PATH}/storage/diagrams/`
+- 설정하지 않은 경우: `{MCP_SERVER_DIR}/storage/diagrams/`
+
+생성된 이미지는 설정된 경로에 저장되며, Claude Desktop이 해당 파일을 직접 읽을 수 있습니다.
 
 ### 2. HTTP/SSE MCP (Web Clients)
 
