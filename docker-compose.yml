@@ -4,7 +4,7 @@ services:
   # Backend API (인메모리 저장소 사용)
   backend:
     build:
-      context: ./backend
+      context: ./packages/backend
       dockerfile: Dockerfile
     container_name: mermaid-saiko-backend
     restart: unless-stopped
@@ -13,12 +13,12 @@ services:
     environment:
       NODE_ENV: production
     volumes:
-      - ./backend/logs:/app/logs
+      - ./packages/backend/logs:/app/logs
 
   # Frontend (Nginx)
   frontend:
     build:
-      context: ./frontend
+      context: ./packages/frontend
       dockerfile: Dockerfile
     container_name: mermaid-saiko-frontend
     restart: unless-stopped
