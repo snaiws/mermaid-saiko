@@ -68,13 +68,14 @@ export const DiagramPreview: React.FC = () => {
             </div>
 
             {/* 다이어그램 컨테이너 */}
-            <TransformComponent
-              wrapperClass="w-full h-full"
-              contentClass="flex items-center justify-center"
-            >
+            <TransformComponent wrapperClass="w-full h-full">
               <div
                 ref={containerRef}
-                className="inline-block"
+                style={{
+                  display: 'inline-block',
+                  minWidth: 'min-content',
+                  minHeight: 'min-content',
+                }}
               ></div>
             </TransformComponent>
           </>

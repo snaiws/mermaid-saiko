@@ -61,10 +61,26 @@ export class MermaidPuppeteerRendererService
     // Mermaid 렌더링 완료 대기
     await page.waitForSelector('#mermaid-container svg', { timeout: 5000 });
 
-    // SVG 추출
+    // SVG 추출 및 크기 속성 조정
     const svg = await page.evaluate(() => {
       const svgElement = document.querySelector('#mermaid-container svg');
-      return svgElement ? svgElement.outerHTML : null;
+      if (!svgElement) return null;
+
+      // 원본 크기 가져오기
+      const width = svgElement.getAttribute('width');
+      const height = svgElement.getAttribute('height');
+      const existingViewBox = svgElement.getAttribute('viewBox');
+
+      // viewBox가 없으면 원본 크기로 생성
+      if (!existingViewBox && width && height) {
+        svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      }
+
+      // width, height 속성 제거 (viewBox만 유지)
+      svgElement.removeAttribute('width');
+      svgElement.removeAttribute('height');
+
+      return svgElement.outerHTML;
     });
 
     await page.close();
