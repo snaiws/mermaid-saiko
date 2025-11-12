@@ -11,6 +11,15 @@ export const DiagramPreview: React.FC = () => {
   useEffect(() => {
     if (containerRef.current && renderedSvg) {
       containerRef.current.innerHTML = renderedSvg;
+
+      // SVG 크기 속성 제거하여 반응형으로 만들기
+      const svgElement = containerRef.current.querySelector('svg');
+      if (svgElement) {
+        svgElement.removeAttribute('width');
+        svgElement.removeAttribute('height');
+        svgElement.style.maxWidth = '100%';
+        svgElement.style.height = 'auto';
+      }
     }
   }, [renderedSvg]);
 
@@ -43,7 +52,7 @@ export const DiagramPreview: React.FC = () => {
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
             {/* 확대/축소 컨트롤 */}
-            <div className="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white rounded-lg shadow-lg p-2 border border-gray-200">
+            <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2 bg-white rounded-lg shadow-lg p-2 border border-gray-200">
               <button
                 onClick={() => zoomIn()}
                 className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors font-bold"
