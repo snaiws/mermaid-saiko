@@ -4,14 +4,18 @@ import { S3Service } from '../../infrastructure/storage/s3.service';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+export type OutputType = 'file' | 'base64';
+
 export interface RenderDiagramInput {
   mermaidCode: string;
+  outputType?: OutputType; // 'file' (default) or 'base64'
   useLocalStorage?: boolean; // stdio 모드에서는 true
 }
 
 export interface RenderDiagramOutput {
   success: boolean;
-  imageUrl?: string;
+  imageUrl?: string; // outputType='file'일 때
+  imageBase64?: string; // outputType='base64'일 때
   diagramType?: string;
   error?: string;
 }
@@ -31,10 +35,13 @@ export class RenderDiagramTool {
   async execute(input: RenderDiagramInput): Promise<RenderDiagramOutput> {
     try {
       // 1. PNG 생성 (Export Use Case 사용)
+      // 더 높은 해상도 사용: 1920x1440 (Full HD 기준)
+      // ImagePuppeteerConverterService에서 scale=2 (deviceScaleFactor)를 사용하므로
+      // 최종 출력은 3840x2880 픽셀이 됨 (4K 수준)
       const exportCommand = new ExportPngCommand(
         input.mermaidCode,
-        800, // width
-        600, // height
+        1920, // width (2.4x 증가)
+        1440, // height (2.4x 증가)
       );
       const exportResult = await this.exportPngUseCase.execute(exportCommand);
 
@@ -42,6 +49,18 @@ export class RenderDiagramTool {
         ? exportResult.imageData
         : Buffer.from(exportResult.imageData);
 
+      const outputType = input.outputType || 'file';
+
+      // base64 모드
+      if (outputType === 'base64') {
+        return {
+          success: true,
+          imageBase64: imageBuffer.toString('base64'),
+          diagramType: exportResult.format,
+        };
+      }
+
+      // file 모드
       let imageUrl: string;
 
       if (input.useLocalStorage) {

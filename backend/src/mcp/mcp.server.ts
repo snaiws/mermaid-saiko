@@ -65,13 +65,18 @@ export class MermaidMcpServer {
         {
           name: 'render_diagram',
           description:
-            'Renders a Mermaid diagram and returns a PNG image file path (local storage)',
+            'Renders a Mermaid diagram and returns either a PNG file path or base64-encoded PNG data',
           inputSchema: {
             type: 'object',
             properties: {
               mermaidCode: {
                 type: 'string',
                 description: 'The Mermaid diagram code to render',
+              },
+              outputType: {
+                type: 'string',
+                enum: ['file', 'base64'],
+                description: 'Output type: "file" (saves to disk and returns file path) or "base64" (returns base64-encoded PNG). Default: "file"',
               },
             },
             required: ['mermaidCode'],
