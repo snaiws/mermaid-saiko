@@ -12,7 +12,11 @@ export const DiagramPreview: React.FC = () => {
     if (containerRef.current && renderedSvg) {
       containerRef.current.innerHTML = renderedSvg;
 
-      // SVG는 원본 크기 그대로 유지 (TransformComponent가 확대/축소 담당)
+      // SVG의 max-width 제거 (확대 시 크기 제한 방지)
+      const svgElement = containerRef.current.querySelector('svg');
+      if (svgElement) {
+        svgElement.style.maxWidth = 'none';
+      }
     }
   }, [renderedSvg]);
 
