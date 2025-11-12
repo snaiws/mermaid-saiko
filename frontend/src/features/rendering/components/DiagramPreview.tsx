@@ -7,6 +7,7 @@ import { ErrorMessage } from '../../../shared/components/ErrorMessage';
 export const DiagramPreview: React.FC = () => {
   const { renderedSvg, isLoading, error, status } = useRenderingStore();
   const containerRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current && renderedSvg) {
@@ -39,7 +40,7 @@ export const DiagramPreview: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-full bg-white overflow-hidden">
+    <div ref={wrapperRef} className="w-full h-full bg-white overflow-hidden">
       <TransformWrapper
         initialScale={0.5}
         minScale={0.1}
@@ -54,8 +55,8 @@ export const DiagramPreview: React.FC = () => {
           <div
             ref={containerRef}
             style={{
-              width: '100vw',
-              height: '100vh',
+              width: '400%',
+              height: '400%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
