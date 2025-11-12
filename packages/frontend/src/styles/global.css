@@ -30,3 +30,24 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Mermaid 다이어그램 커스텀 스타일 - 노드 모서리 둥글게 */
+.node rect {
+  rx: 10px !important;
+  ry: 10px !important;
+}
+
+.classGroup rect {
+  rx: 8px !important;
+  ry: 8px !important;
+}
+
+.actor {
+  rx: 5px !important;
+  ry: 5px !important;
+}
+
+.statediagram-state rect {
+  rx: 8px !important;
+  ry: 8px !important;
+}

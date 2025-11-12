@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "@mermaid-saiko/frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mermaid-saiko/shared": "workspace:*",
     "@monaco-editor/react": "^4.6.0",
     "axios": "^1.7.9",
     "mermaid": "^11.12.1",

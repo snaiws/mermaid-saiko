@@ -1,0 +1,25 @@
+{
+  "name": "@mermaid-saiko/shared",
+  "version": "1.0.0",
+  "description": "Shared configurations and utilities for Mermaid Saiko",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "mermaid",
+    "config",
+    "shared"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "mermaid": "^11.12.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

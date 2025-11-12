@@ -4,17 +4,10 @@ import { useRenderingStore } from '../stores/renderingStore';
 import { useEditorStore } from '../../editor/stores/editorStore';
 import { DiagramType } from '../../../types/diagram';
 import type { DiagramType as DiagramTypeType } from '../../../types/diagram';
+import { MERMAID_CONFIG } from '@mermaid-saiko/shared';
 
-// Mermaid 초기화
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'default',
-  securityLevel: 'loose',
-  fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
-  themeVariables: {
-    fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',
-  },
-});
+// Mermaid 초기화 (shared 패키지에서 공통 설정 사용)
+mermaid.initialize(MERMAID_CONFIG);
 
 export const useRenderDiagram = () => {
   const { setRendering, setSuccess, setError } = useRenderingStore();

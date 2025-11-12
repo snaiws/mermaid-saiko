@@ -1,0 +1,30 @@
+{
+  "name": "mermaid-saiko",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Mermaid diagram editor and exporter - Monorepo",
+  "scripts": {
+    "dev:backend": "pnpm --filter @mermaid-saiko/backend dev",
+    "dev:frontend": "pnpm --filter @mermaid-saiko/frontend dev",
+    "dev": "pnpm --parallel --filter @mermaid-saiko/backend --filter @mermaid-saiko/frontend dev",
+    "build:shared": "pnpm --filter @mermaid-saiko/shared build",
+    "build:backend": "pnpm --filter @mermaid-saiko/backend build",
+    "build:frontend": "pnpm --filter @mermaid-saiko/frontend build",
+    "build": "pnpm build:shared && pnpm --parallel --filter @mermaid-saiko/backend --filter @mermaid-saiko/frontend build",
+    "test": "pnpm --recursive test",
+    "lint": "pnpm --recursive lint",
+    "clean": "pnpm --recursive exec rm -rf node_modules dist && rm -rf node_modules"
+  },
+  "keywords": [
+    "mermaid",
+    "diagram",
+    "editor",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

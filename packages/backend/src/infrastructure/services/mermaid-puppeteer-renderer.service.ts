@@ -1,6 +1,12 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import puppeteer, { Browser } from 'puppeteer';
 import { IMermaidRenderer } from '../../domain/rendering/mermaid-renderer.interface';
+import {
+  MERMAID_VERSION,
+  MERMAID_CONFIG,
+  MERMAID_CUSTOM_CSS,
+  PRETENDARD_FONT_CSS,
+} from '@mermaid-saiko/shared';
 
 /**
  * Puppeteer 기반 Mermaid Renderer
@@ -40,31 +46,16 @@ export class MermaidPuppeteerRendererService
       <html>
         <head>
           <meta charset="UTF-8">
-          <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"></script>
+          <script src="https://cdn.jsdelivr.net/npm/mermaid@${MERMAID_VERSION}/dist/mermaid.min.js"></script>
           <style>
-            @font-face {
-              font-family: 'Pretendard';
-              font-weight: 400;
-              font-style: normal;
-              font-display: swap;
-              src: url('http://localhost:3000/fonts/Pretendard-Regular.woff2') format('woff2');
-            }
-
-            body {
-              font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            }
+            ${PRETENDARD_FONT_CSS}
+            ${MERMAID_CUSTOM_CSS}
           </style>
         </head>
         <body>
           <div id="mermaid-container">${mermaidCode}</div>
           <script>
-            mermaid.initialize({
-              startOnLoad: false,
-              theme: 'default',
-              themeVariables: {
-                fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif'
-              }
-            });
+            mermaid.initialize(${JSON.stringify(MERMAID_CONFIG)});
             async function renderDiagram() {
               const container = document.getElementById('mermaid-container');
               const { svg } = await mermaid.render('diagram', container.textContent);
