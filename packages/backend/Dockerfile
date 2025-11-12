@@ -1,24 +1,33 @@
 # Stage 1: Build
 FROM node:22-alpine AS builder
 
-WORKDIR /app
+# Install pnpm
+RUN npm install -g pnpm
 
-# Copy package files
-COPY package*.json ./
+WORKDIR /workspace
 
-# Install dependencies
-RUN npm ci
+# Copy monorepo root files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
-# Copy source code
-COPY . .
+# Copy all packages
+COPY packages ./packages
 
-# Build
-RUN npm run build
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build shared package first
+RUN pnpm --filter @mermaid-saiko/shared build
+
+# Build backend
+RUN pnpm --filter @mermaid-saiko/backend build
 
 # Stage 2: Production
 FROM node:22-alpine
 
-WORKDIR /app
+# Install pnpm
+RUN npm install -g pnpm
+
+WORKDIR /workspace
 
 # Install Chromium and dependencies for Puppeteer
 RUN apk add --no-cache \
@@ -34,17 +43,26 @@ RUN apk add --no-cache \
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-# Copy package files
-COPY package*.json ./
+# Copy monorepo root files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy packages
+COPY packages/shared ./packages/shared
+COPY packages/backend/package.json ./packages/backend/
 
 # Install only production dependencies
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --prod
 
-# Copy built files from builder stage
-COPY --from=builder /app/dist ./dist
+# Build shared in production
+WORKDIR /workspace/packages/shared
+RUN pnpm build
+
+# Copy backend built files from builder stage
+WORKDIR /workspace/packages/backend
+COPY --from=builder /workspace/packages/backend/dist ./dist
 
 # Copy public files (fonts)
-COPY public ./public
+COPY packages/backend/public ./public
 
 # Expose port
 EXPOSE 3000
