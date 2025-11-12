@@ -15,8 +15,16 @@ export const DiagramPreview: React.FC = () => {
 
       const svgElement = containerRef.current.querySelector('svg');
       if (svgElement) {
+        // viewBox 제거하고 고정 width/height만 사용
+        const viewBox = svgElement.getAttribute('viewBox');
+        if (viewBox) {
+          const [, , width, height] = viewBox.split(' ').map(Number);
+          svgElement.removeAttribute('viewBox');
+          svgElement.setAttribute('width', width.toString());
+          svgElement.setAttribute('height', height.toString());
+        }
+
         svgElement.style.maxWidth = 'none';
-        // SVG 드래그 방지 (TransformWrapper의 패닝만 작동하도록)
         svgElement.setAttribute('draggable', 'false');
         svgElement.style.userSelect = 'none';
       }
