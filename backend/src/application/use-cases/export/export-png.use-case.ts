@@ -65,7 +65,8 @@ export class ExportPngUseCase {
         diagramImage.fileSize,
       );
     } catch (error) {
-      // Export 실패 시 에러 발생
+      // Export 실패 시 에러 로깅 및 발생
+      console.error('PNG Export Error:', error);
       throw error;
     }
   }

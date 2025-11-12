@@ -4,7 +4,7 @@ import { useExportStore } from '../stores/exportStore';
 import { useExportImage } from '../hooks/useExportImage';
 
 export const ExportButton: React.FC = () => {
-  const { format, setFormat, options, setOptions, isExporting } =
+  const { format, setFormat, options, setOptions, isExporting, error } =
     useExportStore();
   const { exportImage } = useExportImage();
   const [showOptions, setShowOptions] = useState(false);
@@ -18,6 +18,12 @@ export const ExportButton: React.FC = () => {
       >
         {isExporting ? 'Exporting...' : `Export ${format.toUpperCase()}`}
       </Button>
+
+      {error && (
+        <div className="absolute top-full left-0 mt-2 p-2 bg-red-100 border border-red-400 text-red-700 rounded text-sm max-w-xs">
+          {error}
+        </div>
+      )}
 
       <button
         onClick={() => setShowOptions(!showOptions)}

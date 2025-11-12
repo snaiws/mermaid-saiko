@@ -49,7 +49,16 @@ export class ImagePuppeteerConverterService
       <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="UTF-8">
           <style>
+            @font-face {
+              font-family: 'Pretendard';
+              font-weight: 400;
+              font-style: normal;
+              font-display: swap;
+              src: url('http://localhost:3000/fonts/Pretendard-Regular.woff2') format('woff2');
+            }
+
             * {
               margin: 0;
               padding: 0;
@@ -65,13 +74,19 @@ export class ImagePuppeteerConverterService
               display: flex;
               align-items: flex-start;
               justify-content: flex-start;
+              font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             }
             #svg-container {
               display: inline-block;
               line-height: 0;
+              padding: 20px;
             }
             #svg-container svg {
               display: block;
+            }
+            #svg-container svg text,
+            #svg-container svg tspan {
+              font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
             }
           </style>
         </head>
@@ -81,20 +96,34 @@ export class ImagePuppeteerConverterService
       </html>
     `;
 
-    await page.setContent(html);
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
 
-    // SVG의 실제 렌더링된 크기 가져오기
+    // 폰트가 완전히 로드될 때까지 대기 (타임아웃 추가)
+    await page.evaluateHandle('document.fonts.ready').catch(() => {
+      console.warn('Font loading timeout, proceeding anyway');
+    });
+
+    // SVG의 실제 렌더링된 크기 가져오기 및 여백 추가
     const dimensions = await page.evaluate(() => {
       const svgElement = document.querySelector('svg');
       if (!svgElement) return { width: 800, height: 600 };
 
-      // SVG의 실제 렌더링된 bounding box 사용
-      const bbox = svgElement.getBoundingClientRect();
+      // SVG의 모든 요소의 실제 bounding box 계산
+      const bbox = svgElement.getBBox();
 
-      return {
-        width: Math.ceil(bbox.width) || 800,
-        height: Math.ceil(bbox.height) || 600,
-      };
+      // 여백 추가 (텍스트 잘림 방지)
+      const padding = 40; // 40px 여백
+      const totalWidth = bbox.width + padding * 2;
+      const totalHeight = bbox.height + padding * 2;
+      const viewBoxX = bbox.x - padding;
+      const viewBoxY = bbox.y - padding;
+
+      // 새로운 viewBox 설정
+      svgElement.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${totalWidth} ${totalHeight}`);
+      svgElement.setAttribute('width', totalWidth.toString());
+      svgElement.setAttribute('height', totalHeight.toString());
+
+      return { width: totalWidth, height: totalHeight };
     });
 
     // 뷰포트 설정 (고해상도)

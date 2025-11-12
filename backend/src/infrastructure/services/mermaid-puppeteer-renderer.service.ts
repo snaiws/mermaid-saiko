@@ -39,12 +39,32 @@ export class MermaidPuppeteerRendererService
       <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="UTF-8">
           <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.0/dist/mermaid.min.js"></script>
+          <style>
+            @font-face {
+              font-family: 'Pretendard';
+              font-weight: 400;
+              font-style: normal;
+              font-display: swap;
+              src: url('http://localhost:3000/fonts/Pretendard-Regular.woff2') format('woff2');
+            }
+
+            body {
+              font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }
+          </style>
         </head>
         <body>
           <div id="mermaid-container">${mermaidCode}</div>
           <script>
-            mermaid.initialize({ startOnLoad: false, theme: 'default' });
+            mermaid.initialize({
+              startOnLoad: false,
+              theme: 'default',
+              themeVariables: {
+                fontFamily: 'Pretendard, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif'
+              }
+            });
             async function renderDiagram() {
               const container = document.getElementById('mermaid-container');
               const { svg } = await mermaid.render('diagram', container.textContent);
@@ -56,7 +76,12 @@ export class MermaidPuppeteerRendererService
       </html>
     `;
 
-    await page.setContent(html);
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+
+    // 폰트가 완전히 로드될 때까지 대기 (타임아웃 추가)
+    await page.evaluateHandle('document.fonts.ready').catch(() => {
+      console.warn('Font loading timeout, proceeding anyway');
+    });
 
     // Mermaid 렌더링 완료 대기
     await page.waitForSelector('#mermaid-container svg', { timeout: 5000 });
