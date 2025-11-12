@@ -12,10 +12,12 @@ export const DiagramPreview: React.FC = () => {
     if (containerRef.current && renderedSvg) {
       containerRef.current.innerHTML = renderedSvg;
 
-      // SVG의 max-width 제거 (확대 시 크기 제한 방지)
       const svgElement = containerRef.current.querySelector('svg');
       if (svgElement) {
         svgElement.style.maxWidth = 'none';
+        // SVG 드래그 방지 (TransformWrapper의 패닝만 작동하도록)
+        svgElement.setAttribute('draggable', 'false');
+        svgElement.style.userSelect = 'none';
       }
     }
   }, [renderedSvg]);
@@ -57,7 +59,6 @@ export const DiagramPreview: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              pointerEvents: 'none',
             }}
           ></div>
         </TransformComponent>
