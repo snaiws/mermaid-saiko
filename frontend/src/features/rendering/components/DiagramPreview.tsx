@@ -11,6 +11,28 @@ export const DiagramPreview: React.FC = () => {
   useEffect(() => {
     if (containerRef.current && renderedSvg) {
       containerRef.current.innerHTML = renderedSvg;
+
+      // SVG 요소의 크기 속성을 동적으로 조정
+      const svgElement = containerRef.current.querySelector('svg');
+      if (svgElement) {
+        // 원본 크기 저장
+        const originalWidth = svgElement.getAttribute('width');
+        const originalHeight = svgElement.getAttribute('height');
+        const viewBox = svgElement.getAttribute('viewBox');
+
+        // viewBox가 없으면 원본 크기를 기반으로 생성
+        if (!viewBox && originalWidth && originalHeight) {
+          svgElement.setAttribute('viewBox', `0 0 ${originalWidth} ${originalHeight}`);
+        }
+
+        // width, height를 100%로 설정하여 컨테이너에 맞게 조정
+        svgElement.removeAttribute('width');
+        svgElement.removeAttribute('height');
+        svgElement.style.width = '100%';
+        svgElement.style.height = '100%';
+        svgElement.style.maxWidth = 'none';
+        svgElement.style.maxHeight = 'none';
+      }
     }
   }, [renderedSvg]);
 
@@ -69,12 +91,13 @@ export const DiagramPreview: React.FC = () => {
 
             {/* 다이어그램 컨테이너 */}
             <TransformComponent
-              wrapperClass="w-full h-full"
-              contentClass="flex items-center justify-center"
+              wrapperClass="w-full h-full flex items-center justify-center"
+              contentClass="inline-flex"
             >
               <div
                 ref={containerRef}
-                className="inline-block"
+                className="inline-block min-w-0"
+                style={{ maxWidth: '100%' }}
               ></div>
             </TransformComponent>
           </>
