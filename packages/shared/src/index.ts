@@ -4,4 +4,4 @@ export {
   MERMAID_CONFIG,
   MERMAID_CUSTOM_CSS,
   PRETENDARD_FONT_CSS,
-} from './mermaid/config';
+} from './mermaid/config.js';
