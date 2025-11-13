@@ -2,24 +2,25 @@
 FROM node:22-alpine AS builder
 
 # Install pnpm
-RUN npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /workspace
 
-# Copy monorepo root files
+# Copy dependency files first for better caching
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/frontend/package.json ./packages/frontend/
 
-# Copy all packages
-COPY packages ./packages
+# Install dependencies
+RUN pnpm install --frozen-lockfile --prefer-offline
 
-# Install all dependencies
-RUN pnpm install --frozen-lockfile
+# Copy source code
+COPY packages/shared ./packages/shared
+COPY packages/frontend ./packages/frontend
 
-# Build shared package first
-RUN pnpm --filter @mermaid-saiko/shared build
-
-# Build frontend
-RUN pnpm --filter @mermaid-saiko/frontend build
+# Build shared first, then frontend
+RUN pnpm --filter @mermaid-saiko/shared build && \
+    pnpm --filter @mermaid-saiko/frontend build
 
 # Stage 2: Serve with nginx
 FROM nginx:alpine

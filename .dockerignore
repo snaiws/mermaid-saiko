@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+
+# Node modules (will be installed in Docker)
+node_modules
+**/node_modules
+
+# Build outputs
+dist
+**/dist
+build
+**/build
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Testing
+coverage
+.nyc_output
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+documents
+*.md
+!README.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Storage
+storage
+
+# Temporary files
+*.tmp
+*.temp
+.cache
