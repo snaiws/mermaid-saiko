@@ -11,8 +11,8 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/backend/package.json ./packages/backend/
 
-# Install dependencies with frozen lockfile
-RUN pnpm install --frozen-lockfile --prefer-offline
+# Install all dependencies (including devDependencies for build)
+RUN pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
 # Copy source code
 COPY packages/shared ./packages/shared
